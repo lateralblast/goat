@@ -94,6 +94,7 @@ parser.add_argument("--verbose",action='store_true')  # Enable verbose output
 parser.add_argument("--debug",action='store_true')    # Enable debug output
 parser.add_argument("--search",required=False)        # Search output for value
 parser.add_argument("--avail",required=False)         # Get available version from vendor (e.g. BIOS)
+parser.add_argument("--check",required=False)         # Check current version against available version from vendor (e.g. BIOS)
 parser.add_argument("--model",required=False)         # Specify model (can be used with --avail)
 
 option = vars(parser.parse_args())
@@ -165,7 +166,7 @@ def get_web_amt_value(avail,model,driver):
         string  = "BIOS Download link: %s" % (bios_url)
         print(string)
         driver.quit()
-        return
+        return version
   return
 
 # Get AMT value
@@ -317,6 +318,18 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
   driver.quit()
   return
 
+# Compare versions
+
+def compare_versions(bios,avail,oob_type):
+  if oob_type == "amt":
+    if re.search(".",bios):
+      current = bios.split(".")[2]
+    if avail > current:
+      print("Newer version of BIOS available")
+    if avail == current:
+      print("Latest version of BIOS installed")
+  return
+
 # Handle version switch
 
 if option["version"]:
@@ -393,6 +406,11 @@ if option["set"]:
 if option["avail"]:
   avail = option["avail"]
 
+# Handle check switch
+
+if option["check"]:
+  check = option["check"]
+
 # Handle vendor switch
 
 if option["type"]:
@@ -404,6 +422,11 @@ if option["type"]:
     options.headless = True
     driver = webdriver.Chrome(options=options)
   if oob_type == "amt":
+    if option["check"]:
+      model    = get_amt_value("model",ip,username,password,driver,http_proto,search)
+      current  = get_amt_value(check,ip,username,password,driver,http_proto,search)
+      avail    = get_web_amt_value(check,model,driver)
+      compare_versions(current,avail,oob_type)
     if option["avail"]:
       if not option["model"]:
         model = get_amt_value("model",ip,username,password,driver,http_proto,search)

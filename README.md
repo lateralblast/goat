@@ -80,7 +80,7 @@ optional arguments:
 Get BIOS version:
 
 ```
-./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXX --get bios --type amt
+./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXXX --get bios --type amt
 Version: DNKBLi5v.86A.0063.2019.0503.1714
 ```
 
@@ -95,16 +95,27 @@ BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update
 Get available BIOS versions for a managed device:
 
 ```
-./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXX --avail bios --type amt
+./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXXX --avail bios --type amt
 Computer model: NUC7i5DNKE
 Available version:  0063
 BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update-DNKBLi5v-86A-
 ```
 
+Check current BIOS version against available vendor version:
+
+```
+./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXXX --check bios --type amt
+Computer model: NUC7i5DNKE
+Version: DNKBLi5v.86A.0063.2019.0503.1714
+Available version:  0063
+BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update-DNKBLi5v-86A-
+Latest version of BIOS installed
+```
+
 Get the Memory configuration:
 
 ```
-./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXX --get memory --type amt
+./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXXX --get memory --type amt
 Memory Information
 Module 1
 Not installed
@@ -127,7 +138,7 @@ Not installed
 Get System information:
 
 ```
-./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXX --get system --type amt
+./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXXX --get system --type amt
 System Information
 Platform
 Computer model: NUC7i5DNKE
