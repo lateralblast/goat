@@ -1,0 +1,16 @@
+# 0.0.1: Sun 26 May 2019
+# Inital version with phantomjs support
+# 0.0.2: Mon 27 May 2019
+# Initial working get version with geckodriver
+# 0.0.3: Tue 28 May 2019
+# Moved to chromedriver
+# 0.0.4: Tue 28 May 2019 10:39:53 AEST
+# Cleaned up output for memory
+# 0.0.5: Wed 29 May 2019 09:29:05 AEST
+# Initial working read/get only concept with clean output
+# 0.0.6: Wed 29 May 2019 15:30:39 AEST
+# Cleaned up code and added basic search functionality as well as serial and bios search
+# 0.0.7: Wed 29 May 2019 17:00:00 AEST
+# Added code to get available BIOS version for Intel devices
+# 0.0.8: Wed 29 May 2019 18:01:31 AEST
+# Fixed and re-commit after a bad commit
