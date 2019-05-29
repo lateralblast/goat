@@ -83,7 +83,6 @@ Get BIOS version:
 ./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXX --get bios --type amt
 Version: DNKBLi5v.86A.0063.2019.0503.1714
 ```
->>>>>>> Added code to get available BIOS version for Intel devices
 
 Get available BIOS version for a specific model:
 
