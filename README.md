@@ -23,11 +23,9 @@ Some features:
 Notes
 -----
 
-The API documentation is confusing as it has changed from a SOAP based interface to
-a Web Services based interface. There are several tools, e.g. amttool to manage AMT,
-however I found these did not have all the functionality I needed, and some of the
-functionality did not work. I found it easier to use Selenium to drive the
-management web interface.
+There are several tools, e.g. amttool to manage AMT, however I found these did not
+have all the functionality I needed, and some of the functionality did not work.
+I found it easier to use Selenium to drive the management web interface.
 
 If you have not configured a certificate and thus Digest/TLS connectivity for AMT,
 you can connect via HTTP using the --insecure switch.
