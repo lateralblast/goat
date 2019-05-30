@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool) 
-# Version:      0.1.2
+# Version:      0.1.3
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -15,6 +15,7 @@
 
 # Import modules
 
+import subprocess
 import argparse
 import socket
 import time
@@ -372,6 +373,26 @@ def compare_versions(bios,avail,oob_type):
       print("Latest version of BIOS installed")
   return
 
+# Get console output
+
+def get_console_output(command):
+  if verbose_mode:
+    string = "Executing: "+command
+    print(string)
+  process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, )
+  output  = process.communicate()[0].decode()
+  return output
+
+# Check local config
+
+def check_local_config():
+  output = get_console_output("uname -a")
+  if re.search("Darwin",output):
+    if os.path.exists("/usr/local/bin/brew"):
+      if not os.path.exists("/usr/local/bin/geckodriver"):
+        output = get_console_output("brew install geckodriver")
+  return
+
 # Handle version switch
 
 if option["version"]:
@@ -463,11 +484,12 @@ if option["check"]:
 # Handle vendor switch
 
 if option["type"]:
+  check_local_config()
   oob_type = option["type"]
   oob_type = oob_type.lower()
   if oob_type == "amt":
     if debug_mode == False:
-      from selenium.webdriver.chrome.options import Options
+      from selenium.webdriver.firefox.options import Options
       options = Options()
       options.headless = True
       driver = webdriver.Firefox(options=options)

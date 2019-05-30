@@ -22,3 +22,5 @@
 # Added mask function
 # 0.1.2: Thu 30 May 2019 18:16:20 AEST
 # Initial working poweron/poweroff/reset function
+# 0.1.3: Thu 30 May 2019 18:49:13 AEST
+# Fixed headless mode for geckodriver
