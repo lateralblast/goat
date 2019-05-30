@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool) 
-# Version:      0.1.4
+# Version:      0.1.5
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -359,7 +359,6 @@ def set_amt_value(set_value,ip,username,password,driver,http_proto,search):
   object = driver.switch_to.alert
   time.sleep(2)
   object.accept()
-  driver.find_element_by_xpath(u'//input[@value="OK"]').click()
   driver.quit()
   string = "Sending %s to %s (Intel AMT has a 30s pause before operation is done)" % (set_value,ip)
   print(string)

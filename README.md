@@ -10,23 +10,23 @@ Introduction
 
 This tools is designed to consolidate several tools into one generic tool.
 
-At the moment it supports get/read only fetches of information from Intels AMT.
+At the moment it supports get/set for Intel's AMT.
 
 Notes
 -----
 
-The API is not that well documented and has changed from a SOAP based interface to
-a Web Services based interface. There are sever tools, e.g. amttool to manage AMT,
+The API documentation is confusing as it has changed from a SOAP based interface to
+a Web Services based interface. There are several tools, e.g. amttool to manage AMT,
 however I found these did not have all the functionality I needed, and some of the
 functionality did not work. I found it easier to use Selenium to drive the
 management web interface.
 
-SSL support may work, it is still being tested. The --insecure switch connects via http.
+If you have not configured a certificae and thus Digest/TLS connectivity for AMT,
+you can connect via HTTP using the --insecure switch.
 
 Todo:
 
-- Fully test SSL support
-- Add ability to set parameters, e.g. power reset/off/on
+- Add a local password store so password don't appear on the command line
 - Add in support for other platforms from other scripts
 
 Requirements
@@ -83,7 +83,7 @@ optional arguments:
 Get BIOS version:
 
 ```
-./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXXX --get bios --type amt
+./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --get bios --type amt
 Version: DNKBLi5v.86A.0063.2019.0503.1714
 ```
 
@@ -98,7 +98,7 @@ BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update
 Get available BIOS versions for a managed device:
 
 ```
-./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXXX --avail bios --type amt
+./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --avail bios --type amt
 Computer model: NUC7i5DNKE
 Available version:  0063
 BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update-DNKBLi5v-86A-
@@ -107,13 +107,21 @@ BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update
 Check current BIOS version against available vendor version:
 
 ```
-./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXXX --check bios --type amt
+./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --check bios --type amt
 Computer model: NUC7i5DNKE
 Version: DNKBLi5v.86A.0063.2019.0503.1714
 Available version:  0063
 BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update-DNKBLi5v-86A-
 Latest version of BIOS installed
 ```
+
+Reset device:
+
+```
+./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --set reset --type amt
+Sending reset to 192.168.1.171 (Intel AMT has a 30s pause before operation is done)
+```
+
 Start MeshCommander:
 
 ```
@@ -121,11 +129,10 @@ Start MeshCommander:
 MeshCommander running on http://127.0.0.1:3000.
 ```
 
-
 Get the Memory configuration:
 
 ```
-./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXXX --get memory --type amt
+./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --get memory --type amt
 Memory Information
 Module 1
 Not installed
@@ -148,7 +155,7 @@ Not installed
 Get System information:
 
 ```
-./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXXX --get system --type amt
+./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --get system --type amt
 System Information
 Platform
 Computer model: NUC7i5DNKE
@@ -172,7 +179,7 @@ Release date: 05/03/2019
 Get System Event information:
 
 ```
-$ ./goat.py --ip 192.168.1.171 --insecure --username admin --password XXXXXXX --get events --type amt
+$ ./goat.py --ip 192.168.1.171 --username admin --password XXXXXXX --get events --type amt
 Event Log,Event,Time,Source,Description
 1,5/28/2019,9:59 pm,BIOS,Starting operating system boot process.
 2,5/28/2019,9:59 pm,Add-in card,Starting ROM initialization.
