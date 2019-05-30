@@ -21,14 +21,15 @@ however I found these did not have all the functionality I needed, and some of t
 functionality did not work. I found it easier to use Selenium to drive the
 management web interface.
 
-If you have not configured a certificae and thus Digest/TLS connectivity for AMT,
+If you have not configured a certificate and thus Digest/TLS connectivity for AMT,
 you can connect via HTTP using the --insecure switch.
 
 At the moment hostname, username and password can be stored in a file ~/.goatpass
 to help with automation. Obviously this is not totally secure even if the file is
 only readable by you, so I am working on a secure store method.
 
-The format of ~/.goatpass is hostname:username:password. If not password is present
+If you use the --allhosts switch it will step through the hosts in ~/.goatpass.
+The format of ~/.goatpass is hostname:username:password. If no password is present
 it will prompt for one.
 
 Todo:
