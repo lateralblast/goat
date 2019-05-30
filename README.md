@@ -21,11 +21,6 @@ however I found these did not have all the functionality I needed, and some of t
 functionality did not work. I found it easier to use Selenium to drive the
 management web interface.
 
-Some versions of Intel's AMT IME/MBEx stack can crash and become unresponsive
-if the web interface is queried too frequenty, so it's advise to leave at least
-10s between queries. This does not effect the host OS, but the machine will need
-to be powercycled in order for the remote management interface to reset.
-
 SSL support may work, it is still being tested. The --insecure switch connects via http.
 
 Todo:
@@ -42,7 +37,9 @@ The following tools are required:
 - Python and the following libraries
   - Selenium
   - BeautifulSoap
-- chromedriver
+- geckodriver
+
+The code will try to auto install the Python modules if they are not available.
 
 An example of installing these on Mac OS:
 

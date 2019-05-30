@@ -49,7 +49,7 @@ def install_and_import(package):
 try:
   from selenium import webdriver
 except:
-  install_and_import(selenium)
+  install_and_import("selenium")
   from selenium import webdriver
 
 # Load bs4
@@ -350,7 +350,14 @@ def set_amt_value(set_value,ip,username,password,driver,http_proto,search):
     driver.find_element_by_xpath('//input[@value="4"]').click()
   from selenium.webdriver.common.by import By
   driver.find_element_by_xpath('//input[@value="Send Command"]').click()
+  time.sleep(2)
+  object = driver.switch_to.alert
+  time.sleep(2)
+  object.accept()
+  driver.find_element_by_xpath(u'//input[@value="OK"]').click()
   driver.quit()
+  string = "Sending %s to %s (Intel AMT has a 30s pause before operation is done)" % (set_value,ip)
+  print(string)
   return
 
 # Compare versions
@@ -463,9 +470,9 @@ if option["type"]:
       from selenium.webdriver.chrome.options import Options
       options = Options()
       options.headless = True
-      driver = webdriver.Chrome(options=options)
+      driver = webdriver.Firefox(options=options)
     else:
-      driver = webdriver.Chrome()
+      driver = webdriver.Firefox()
   if oob_type == "amt":
     if option["check"]:
       model    = get_amt_value("model",ip,username,password,driver,http_proto,search)
