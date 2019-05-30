@@ -56,7 +56,7 @@ Requirements
 The following tools are required:
 
 - Python and the following libraries
-  - Selenium
+  - Seleniue
   - BeautifulSoap
 - geckodriver
 
@@ -80,6 +80,46 @@ License
 This software is licensed as CC-BA (Creative Commons By Attrbution)
 
 http://creativecommons.org/licenses/by/4.0/legalcode
+
+
+Serial-Over-LAN
+---------------
+
+Here is a brief guide for enabling serial on devices running Linux.
+
+To be able to use SOL (Serial Over LAN) management, you need to enable agetty via init,
+and enable the serial console in grub on the device that you want to remote manage.
+Once this is done the machine will need to be rebooted for the serial console to be enabled.
+
+To enable agetty via init you need determine the serial TTY by running the following command:
+
+```
+dmesg | grep ttyS | grep irq | grep 0000 | tr -s " " | cut -d" " -f4
+```
+
+Once the serial TTY has been determined you can then enable agetty via init:
+
+```
+echo "S1:2345:respawn:/sbin/agetty ttySX 115200 vt100-nav" >> /etc/inittab
+init q
+```
+
+To enable the serial console via grub you’ll need the serial TTY number and
+the IO port which can be determined with the following command:
+
+```
+dmesg | grep ttySX | grep irq | tr -s " " | cut -d" " -f7
+```
+
+Once you have the serial TTY number and the IO port you can configure grub:
+
+```
+echo 'GRUB_CMDLINE_LINUX="console=ttySX,115200"' >> /etc/default/grub
+echo 'GRUB_TERMINAL="serial console"' >> /etc/default/grub
+echo 'GRUB_SERIAL_COMMAND="serial --speed=115200 --port=0xXXXX"' >> /etc/default/grub
+update-grub
+```
+
 
 Examples
 --------
