@@ -30,3 +30,5 @@
 # Bug fix with set code and documentation update
 # 0.1.6: Fri 31 May 2019 03:52:20 AEST
 # Updated documentation
+# 0.1.7: Fri 31 May 2019 05:36:52 AEST
+# Added initial code for dealing with passwords

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool) 
-# Version:      0.1.6
+# Version:      0.1.7
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -17,17 +17,25 @@
 
 import subprocess
 import argparse
+import binascii
+import hashlib
+import getpass
 import socket
 import time
 import sys
 import os
 import re
 
+from os.path import expanduser
+
 # Set some defaults
 
 verbose_mode = False
 mesh_bin     = "meshcommander"
 mesh_port    = "3000"
+password_db  = "goatpass"
+home_dir     = expanduser("~")
+default_user = "admin"
 
 # Check we have pip installed
 
@@ -104,6 +112,7 @@ parser.add_argument("--debug",action='store_true')    # Enable debug output
 parser.add_argument("--mask",action='store_true')     # Mask serial and hostname output output
 parser.add_argument("--mesh",action='store_true')     # Use Meshcommander
 parser.add_argument("--options",action='store_true')  # Display options information
+parser.add_argument("--allhosts",action='store_true') # Automate via .goatpass
 
 option = vars(parser.parse_args())
 
@@ -136,16 +145,40 @@ def print_options(script_exe):
 # Check IP
 
 def check_valid_ip(ip):
-  try:
-    socket.inet_pton(socket.AF_INET, ip)
-  except AttributeError:  
+  if not re.search(r"[a-z]",ip):
     try:
-      socket.inet_aton(ip)
-    except socket.error:
+      socket.inet_pton(socket.AF_INET, ip)
+    except AttributeError:  
+      try:
+        socket.inet_aton(ip)
+      except socket.error:
+        return False
+      return ip.count('.') == 3
+    except socket.error:  # not a valid address
       return False
-    return ip.count('.') == 3
-  except socket.error:  # not a valid address
-    return False
+  else:
+    return True
+
+# Hash a password for storing
+
+def hash_password(password):
+    salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), 
+                                salt, 100000)
+    pwdhash = binascii.hexlify(pwdhash)
+    return (salt + pwdhash).decode('ascii')
+
+# Verify a stored password against one provided by user
+ 
+def verify_password(stored_password, provided_password):
+    salt = stored_password[:64]
+    stored_password = stored_password[64:]
+    pwdhash = hashlib.pbkdf2_hmac('sha512', 
+                                  provided_password.encode('utf-8'), 
+                                  salt.encode('ascii'), 
+                                  100000)
+    pwdhash = binascii.hexlify(pwdhash).decode('ascii')
+    return pwdhash == stored_password
 
 # Get AMT value from web
 
@@ -426,6 +459,56 @@ def start_mesh(mesh_bin,mesh_port):
     print(string)
   return
 
+def get_ips():
+  ips = []
+  pass_file = "%s/.%s" % (home_dir,password_db)
+  if os.path.exists(pass_file):
+    file = open(pass_file,"r")
+    data = file.readlines()
+    for line in data:
+      line.rstrip()
+      (file_ip,file_user,file_pass) = line.split(":")
+      ips.append(file_ip)
+  return ips
+
+# Get username
+
+def get_username(ip):
+  username  = default_user
+  pass_file = "%s/.%s" % (home_dir,password_db)
+  if os.path.exists(pass_file) and re.search(r"[a-z]|[0-9]",ip):
+    file = open(pass_file,"r")
+    data = file.readlines()
+    for line in data:
+      line.rstrip()
+      (file_ip,file_user,file_pass) = line.split(":")
+      if file_ip == ip:
+        return file_user
+  else:
+    return username
+
+# Get password
+
+def get_password(ip,username):
+  password  = ""
+  pass_file = "%s/.%s" % (home_dir,password_db)
+  prompt    = "Password for %s:" % (ip)
+  if os.path.exists(pass_file):
+    file = open(pass_file,"r")
+    data = file.readlines()
+    for line in data:
+      line.rstrip()
+      (file_ip,file_user,file_pass) = line.split(":")
+      if file_ip == ip and file_user == username:
+        if re.search(r"[A-Z]|[a-z]|[0-9]",file_pass):
+          return file_pass
+        else:
+          password = getpass.getpass(prompt=prompt, stream=None)
+          return password
+  else:
+    password = getpass.getpass(prompt=prompt, stream=None)
+  return password
+
 # Handle version switch
 
 if option["version"]:
@@ -462,11 +545,17 @@ else:
 
 if option["username"]:
   username = option["username"]
+else:
+  if option["type"] and not option["allhosts"]:
+    username = get_username(ip)
 
 # Handle password switch
 
 if option["password"]:
   password = option["password"]
+else:
+  if option["type"] and not option["allhosts"]:
+    password = get_password(ip,username)
 
 # Handle search switch
 
@@ -534,41 +623,44 @@ if option["mesh"]:
 # Handle vendor switch
 
 if option["type"]:
+  ips = []
   check_local_config()
   oob_type = option["type"]
   oob_type = oob_type.lower()
-  if oob_type == "amt":
-    if option["mesh"]:
-      if option["port"]:
-        mesh_port = option["port"]
-      check_mesh_config(mesh_bin)
-      start_mesh(mesh_bin,mesh_port)
-    if debug_mode == False:
-      from selenium.webdriver.firefox.options import Options
-      options = Options()
-      options.headless = True
-      driver = webdriver.Firefox(options=options)
-    else:
-      driver = webdriver.Firefox()
-  if oob_type == "amt":
-    if option["check"]:
-      model    = get_amt_value("model",ip,username,password,driver,http_proto,search)
-      current  = get_amt_value(check,ip,username,password,driver,http_proto,search)
-      avail    = get_web_amt_value(check,model,driver)
-      compare_versions(current,avail,oob_type)
-    if option["avail"]:
-      if not option["model"]:
-        model = get_amt_value("model",ip,username,password,driver,http_proto,search)
-      get_web_amt_value(avail,model,driver)
-      exit()
-    if option["get"]:
-      get_amt_value(get_value,ip,username,password,driver,http_proto,search)
-    if option["set"]:
-      set_amt_value(set_value,ip,username,password,driver,http_proto,search)
-      exit()
-    if option["set"]:
-      set_amt_value(set_value,ip,username,password,driver,http_proto,search)
-      exit()
+  if option["allhosts"]:
+    ips = get_ips()
+  else:
+    ips.append(ip)
+  for ip in ips:
+    if option["allhosts"]:
+      username = get_username(ip)
+      password = get_password(ip,username)
+    if oob_type == "amt":
+      if option["mesh"]:
+        if option["port"]:
+          mesh_port = option["port"]
+        check_mesh_config(mesh_bin)
+        start_mesh(mesh_bin,mesh_port)
+      if debug_mode == False:
+        from selenium.webdriver.firefox.options import Options
+        options = Options()
+        options.headless = True
+        driver = webdriver.Firefox(options=options)
+      else:
+        driver = webdriver.Firefox()
+      if option["check"]:
+        model    = get_amt_value("model",ip,username,password,driver,http_proto,search)
+        current  = get_amt_value(check,ip,username,password,driver,http_proto,search)
+        avail    = get_web_amt_value(check,model,driver)
+        compare_versions(current,avail,oob_type)
+      if option["avail"]:
+        if not option["model"]:
+          model = get_amt_value("model",ip,username,password,driver,http_proto,search)
+        get_web_amt_value(avail,model,driver)
+      if option["get"]:
+        get_amt_value(get_value,ip,username,password,driver,http_proto,search)
+      if option["set"]:
+        set_amt_value(set_value,ip,username,password,driver,http_proto,search)
 else:
   print("No OOB type specified")
   exit()

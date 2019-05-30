@@ -24,6 +24,13 @@ management web interface.
 If you have not configured a certificae and thus Digest/TLS connectivity for AMT,
 you can connect via HTTP using the --insecure switch.
 
+At the moment hostname, username and password can be stored in a file ~/.goatpass
+to help with automation. Obviously this is not totally secure even if the file is
+only readable by you, so I am working on a secure store method.
+
+The format of ~/.goatpass is hostname:username:password. If not password is present
+it will prompt for one.
+
 Todo:
 
 - Add a local password store so password don't appear on the command line
