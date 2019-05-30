@@ -14,3 +14,7 @@
 # Added code to get available BIOS version for Intel devices
 # 0.0.8: Wed 29 May 2019 18:01:31 AEST
 # Fixed and re-commit after a bad commit
+# 0.0.9: Wed 29 May 2019 18:49:10 AEST
+# Added code to check current BIOS against available vendor version
+# 0.1.0: Thu 30 May 2019 12:49:30 AEST
+# Started adding set functionality

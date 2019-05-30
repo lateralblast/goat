@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool) 
-# Version:      0.0.8
+# Version:      0.1.0
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -17,6 +17,7 @@
 
 import argparse
 import socket
+import time
 import sys
 import os
 import re
@@ -318,6 +319,28 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
   driver.quit()
   return
 
+# Set AMT value
+
+def set_amt_value(set_value,ip,username,password,driver,http_proto,search):
+  if http_proto == "http":
+    port_no = "16992"
+  else:
+    port_no = "16993"
+  base_url = "%s://%s:%s@%s:%s" % (http_proto,username,password,ip,port_no)
+  if re.search(r"power|reset",set_value):
+    full_url = "%s/remote.htm" % (base_url)
+  driver.get(full_url)
+  if set_value == "poweroff":
+    driver.find_element_by_xpath('//input[@value="1"]').click()
+  if set_value == "powercycle":
+    driver.find_element_by_xpath('//input[@value="3"]').click()
+  if set_value == "reset":
+    driver.find_element_by_xpath('//input[@value="4"]').click()
+  from selenium.webdriver.common.by import By
+  driver.find_element_by_xpath('//input[@value="Send Command"]').click()
+  driver.quit
+  return
+
 # Compare versions
 
 def compare_versions(bios,avail,oob_type):
@@ -417,10 +440,13 @@ if option["type"]:
   oob_type = option["type"]
   oob_type = oob_type.lower()
   if oob_type == "amt":
-    from selenium.webdriver.chrome.options import Options
-    options = Options()
-    options.headless = True
-    driver = webdriver.Chrome(options=options)
+    if debug_mode == False:
+      from selenium.webdriver.chrome.options import Options
+      options = Options()
+      options.headless = True
+      driver = webdriver.Chrome(options=options)
+    else:
+      driver = webdriver.Chrome()
   if oob_type == "amt":
     if option["check"]:
       model    = get_amt_value("model",ip,username,password,driver,http_proto,search)
@@ -436,7 +462,6 @@ if option["type"]:
       get_amt_value(get_value,ip,username,password,driver,http_proto,search)
     if option["set"]:
       set_amt_value(set_value,ip,username,password,driver,http_proto,search)
-      get_amt_value(get_value,ip,username,password,driver,http_proto,search)
       exit()
     if option["set"]:
       set_amt_value(set_value,ip,username,password,driver,http_proto,search)

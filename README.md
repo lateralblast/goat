@@ -51,6 +51,12 @@ pip install selenium
 pip install bs4
 brew cask install chromedriver
 ```
+License
+-------
+
+This software is licensed as CC-BA (Creative Commons By Attrbution)
+
+http://creativecommons.org/licenses/by/4.0/legalcode
 
 Examples
 --------
