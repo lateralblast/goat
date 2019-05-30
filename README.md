@@ -63,8 +63,10 @@ Getting help:
 ```
 $ ./goat.py --help
 usage: goat.py [-h] [--ip IP] [--username USERNAME] [--type TYPE] [--get GET]
-               [--set SET] [--password PASSWORD] [--version] [--insecure]
-               [--verbose] [--debug]
+               [--set SET] [--password PASSWORD] [--search SEARCH]
+               [--avail AVAIL] [--check CHECK] [--model MODEL] [--port PORT]
+               [--version] [--insecure] [--verbose] [--debug] [--mask]
+               [--mesh]
 
 optional arguments:
   -h, --help           show this help message and exit
@@ -74,10 +76,45 @@ optional arguments:
   --get GET
   --set SET
   --password PASSWORD
+  --search SEARCH
+  --avail AVAIL
+  --check CHECK
+  --model MODEL
+  --port PORT
   --version
   --insecure
   --verbose
   --debug
+  --mask
+  --mesh
+  --options
+```
+
+Getting information about options:
+
+```
+./goat.py --options
+
+Options:
+
+--ip          Specify IP of OOB/Remote Management interface
+--username    Set Username
+--type        Set Type
+--get         Get Parameter
+--set         Set Parameter
+--password    Set Password
+--search      Search output for value
+--avail       Get available version from vendor (e.g. BIOS)
+--check       Check current version against available version from vendor (e.g. BIOS)
+--model       Specify model (can be used with --avail)
+--port        Specify port to run service on
+--version     Display version
+--insecure    Use HTTP/Telnet
+--verbose     Enable verbose output
+--debug       Enable debug output
+--mask        Mask serial and hostname output output
+--mesh        Use Meshcommander
+--options     Display options information
 ```
 
 Get BIOS version:

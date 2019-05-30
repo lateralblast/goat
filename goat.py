@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool) 
-# Version:      0.1.5
+# Version:      0.1.6
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -103,6 +103,7 @@ parser.add_argument("--verbose",action='store_true')  # Enable verbose output
 parser.add_argument("--debug",action='store_true')    # Enable debug output
 parser.add_argument("--mask",action='store_true')     # Mask serial and hostname output output
 parser.add_argument("--mesh",action='store_true')     # Use Meshcommander
+parser.add_argument("--options",action='store_true')  # Display options information
 
 option = vars(parser.parse_args())
 
@@ -442,6 +443,13 @@ if option["ip"]:
     string = "Invalid IP: %s" % (ip)
     print(string)
     exit()
+
+# Handle options switch
+
+if option["options"]:
+  script_exe = sys.argv[0]
+  print_options(script_exe)
+  exit()
 
 # Handle insecure switch
 
