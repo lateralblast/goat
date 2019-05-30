@@ -18,3 +18,5 @@
 # Added code to check current BIOS against available vendor version
 # 0.1.0: Thu 30 May 2019 12:49:30 AEST
 # Started adding set functionality
+# 0.1.1: Thu 30 May 2019 13:18:27 AEST
+# Added mask function

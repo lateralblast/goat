@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool) 
-# Version:      0.1.0
+# Version:      0.1.1
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -89,14 +89,15 @@ parser.add_argument("--type",required=False)          # Set Type
 parser.add_argument("--get",required=False)           # Get Parameter
 parser.add_argument("--set",required=False)           # Set Parameter
 parser.add_argument("--password",required=False)      # Set Password
-parser.add_argument("--version",action='store_true')  # Display version 
-parser.add_argument("--insecure",action='store_true') # Use HTTP/Telnet
-parser.add_argument("--verbose",action='store_true')  # Enable verbose output
-parser.add_argument("--debug",action='store_true')    # Enable debug output
 parser.add_argument("--search",required=False)        # Search output for value
 parser.add_argument("--avail",required=False)         # Get available version from vendor (e.g. BIOS)
 parser.add_argument("--check",required=False)         # Check current version against available version from vendor (e.g. BIOS)
 parser.add_argument("--model",required=False)         # Specify model (can be used with --avail)
+parser.add_argument("--version",action='store_true')  # Display version 
+parser.add_argument("--insecure",action='store_true') # Use HTTP/Telnet
+parser.add_argument("--verbose",action='store_true')  # Enable verbose output
+parser.add_argument("--debug",action='store_true')    # Enable debug output
+parser.add_argument("--mask",action='store_true')     # Mask serial and hostname output output
 
 option = vars(parser.parse_args())
 
@@ -168,6 +169,17 @@ def get_web_amt_value(avail,model,driver):
         print(string)
         driver.quit()
         return version
+  return
+
+# Handle output
+
+def handle_output(output):
+  if mask_mode == True:
+    if re.search(r"serial|address|host|id",output.lower()):
+      if re.search(":",output):
+        (param,value) = output.split(":")
+        output = "%s: XXXXXXXX" % (param)
+  print(output)
   return
 
 # Get AMT value
@@ -300,22 +312,22 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
           found = True
         if re.search(r"[A-Z]|[a-z]|[0-9]",search):
           if re.search(search,result) and found == True:
-            print(result)
+            handle_output(result)
             if re.search(r":",result):
               result = result.split(": ")[1]
             return(result)
         else:
           if re.search(sub_value,result.lower()):
-            print(result)
+            handle_output(result)
             if re.search(r":",result):
               result = result.split(": ")[1]
             return(result)
       else:
         if re.search(r"[A-Z]|[a-z]|[0-9]",search):
           if re.search(search,result):
-            print(result)
+            handle_output(result)
         else:
-          print(result)
+          handle_output(result)
   driver.quit()
   return
 
@@ -338,7 +350,7 @@ def set_amt_value(set_value,ip,username,password,driver,http_proto,search):
     driver.find_element_by_xpath('//input[@value="4"]').click()
   from selenium.webdriver.common.by import By
   driver.find_element_by_xpath('//input[@value="Send Command"]').click()
-  driver.quit
+  driver.quit()
   return
 
 # Compare versions
@@ -413,6 +425,13 @@ if option["debug"]:
   debug_mode = True 
 else:
   debug_mode = False
+
+# Handle mask switch
+
+if option["mask"]:
+  mask_mode = True
+else:
+  mask_mode = False
 
 # Handle get switch
 
