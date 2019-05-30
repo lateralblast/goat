@@ -595,7 +595,7 @@ else:
 if option["get"]:
   get_value = option["get"]
 
-# Handle get switch
+# Handle set switch
 
 if option["set"]:
   set_value = option["set"]

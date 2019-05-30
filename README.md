@@ -12,6 +12,13 @@ This tools is designed to consolidate several tools into one generic tool.
 
 At the moment it supports get/set for Intel's AMT.
 
+Some features:
+
+- Get system information (e.g. Serial, Model, Logs, etc)
+- Check BIOS version
+- Remotely reset device
+- Start MeshCommander in order to do other manage tasks (e.g. configure certificates)
+
 Notes
 -----
 
@@ -32,9 +39,16 @@ If you use the --allhosts switch it will step through the hosts in ~/.goatpass.
 The format of ~/.goatpass is hostname:username:password. If no password is present
 it will prompt for one.
 
+The script will try to install various components on Mac OS, eg Python Modules,
+and MeshCommander.
+
+MeshCommander is available from here:
+
+https://www.meshcommander.com/meshcommander
+
 Todo:
 
-- Add a local password store so password don't appear on the command line
+- Add a local password store so password can be stored securely
 - Add in support for other platforms from other scripts
 
 Requirements
