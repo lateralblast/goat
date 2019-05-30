@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool) 
-# Version:      0.1.7
+# Version:      0.1.8
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -113,6 +113,7 @@ parser.add_argument("--mask",action='store_true')     # Mask serial and hostname
 parser.add_argument("--mesh",action='store_true')     # Use Meshcommander
 parser.add_argument("--options",action='store_true')  # Display options information
 parser.add_argument("--allhosts",action='store_true') # Automate via .goatpass
+parser.add_argument("--sol",action='store_true')      # Start a SOL connection to host
 
 option = vars(parser.parse_args())
 
@@ -423,11 +424,16 @@ def get_console_output(command):
 # Check local config
 
 def check_local_config():
+  pkg_list = [ "geckodriver", "amtterm", "npm" ]
+  pkg_dir  = "/usr/local/bin"
+  brew_bin = "%s/brew" % (pkg_dir)
   output = get_console_output("uname -a")
   if re.search("Darwin",output):
-    if os.path.exists("/usr/local/bin/brew"):
-      if not os.path.exists("/usr/local/bin/geckodriver"):
-        output = get_console_output("brew install geckodriver")
+    for pkg_name in pkg_list:
+      pkg_bin = "%s/%s" % (pkg_dir,pkg_name)
+      if not os.path.exists(pkg_bin):
+        command = "brew install %s" % (pkg_name)
+        output  = get_console_output(command)
   return
 
 # Check mesh config
@@ -439,9 +445,6 @@ def check_mesh_config(mesh_bin):
     os.mkdir(mesh_dir)
     uname = os.uname
     if re.search("Darwin",uname):
-      if os.path.exists("/usr/local/bin/brew"):
-        if not os.path.exists("/usr/local/bin/npm"):
-          output  = get_console_output("brew install npm")
       if not os.path.exists(node_dir):
         command = "cd %s ; npm install meshcommander" % (mesh_dir)
         output  = get_console_output(command)
@@ -508,6 +511,13 @@ def get_password(ip,username):
   else:
     password = getpass.getpass(prompt=prompt, stream=None)
   return password
+
+# Sol to host
+
+def sol_to_host(ip,password):
+  command = "export AMT_PASSWORD=\"%s\" ; amtterm %s" % (password,ip)
+  os.system(command)
+  return
 
 # Handle version switch
 
@@ -636,6 +646,8 @@ if option["type"]:
       username = get_username(ip)
       password = get_password(ip,username)
     if oob_type == "amt":
+      if option["sol"]:
+        sol_to_host(ip,password)
       if option["mesh"]:
         if option["port"]:
           mesh_port = option["port"]

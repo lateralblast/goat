@@ -18,6 +18,7 @@ Some features:
 - Check BIOS version
 - Remotely reset device
 - Start MeshCommander in order to do other manage tasks (e.g. configure certificates)
+- Start amtterm for connecting to the AMT SOL (requires non TLS/Digest access to be enabled)
 
 Notes
 -----
@@ -139,10 +140,29 @@ Options:
 --options     Display options information
 ```
 
+Connecting to host over SOL:
+
+```
+$ ./goat.py --ip 192.168.1.171 --sol --type amt
+Password for 192.168.1.171:
+amtterm: NONE -> CONNECT (connection to host)
+ipv4 (null) [192.168.1.171] 16994 open
+amtterm: CONNECT -> INIT (redirection initialization)
+amtterm: INIT -> AUTH (session authentication)
+amtterm: AUTH -> INIT_SOL (serial-over-lan initialization)
+amtterm: INIT_SOL -> RUN_SOL (serial-over-lan active)
+serial-over-lan redirection ok
+connected now, use ^] to escape
+
+Ubuntu 18.04.2 LTS inn01 ttyS4
+
+inn01 login:
+```
+
 Get BIOS version:
 
 ```
-./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --get bios --type amt
+./goat.py --ip 192.168.1.171 --get bios --type amt
 Version: DNKBLi5v.86A.0063.2019.0503.1714
 ```
 
@@ -157,7 +177,7 @@ BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update
 Get available BIOS versions for a managed device:
 
 ```
-./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --avail bios --type amt
+./goat.py --ip 192.168.1.171 --avail bios --type amt
 Computer model: NUC7i5DNKE
 Available version:  0063
 BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update-DNKBLi5v-86A-
@@ -166,7 +186,7 @@ BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update
 Check current BIOS version against available vendor version:
 
 ```
-./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --check bios --type amt
+./goat.py --ip 192.168.1.171 --check bios --type amt
 Computer model: NUC7i5DNKE
 Version: DNKBLi5v.86A.0063.2019.0503.1714
 Available version:  0063
@@ -177,7 +197,7 @@ Latest version of BIOS installed
 Reset device:
 
 ```
-./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --set reset --type amt
+./goat.py --ip 192.168.1.171 --set reset --type amt
 Sending reset to 192.168.1.171 (Intel AMT has a 30s pause before operation is done)
 ```
 
@@ -191,7 +211,7 @@ MeshCommander running on http://127.0.0.1:3000.
 Get the Memory configuration:
 
 ```
-./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --get memory --type amt
+./goat.py --ip 192.168.1.171 --get memory --type amt
 Memory Information
 Module 1
 Not installed
@@ -214,7 +234,7 @@ Not installed
 Get System information:
 
 ```
-./goat.py --ip 192.168.1.171 --username admin --password XXXXXXXX --get system --type amt
+./goat.py --ip 192.168.1.171 --get system --type amt
 System Information
 Platform
 Computer model: NUC7i5DNKE
@@ -238,7 +258,7 @@ Release date: 05/03/2019
 Get System Event information:
 
 ```
-$ ./goat.py --ip 192.168.1.171 --username admin --password XXXXXXX --get events --type amt
+$ ./goat.py --ip 192.168.1.171 --get events --type amt
 Event Log,Event,Time,Source,Description
 1,5/28/2019,9:59 pm,BIOS,Starting operating system boot process.
 2,5/28/2019,9:59 pm,Add-in card,Starting ROM initialization.
