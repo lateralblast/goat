@@ -60,14 +60,19 @@ The following tools are required:
   - BeautifulSoap
 - geckodriver
 
-The code will try to auto install the Python modules if they are not available.
+The code will try to auto install the Python modules and other tools if they are not available.
 
 An example of installing these on Mac OS:
 
 ```
 pip install selenium
 pip install bs4
-brew cask install chromedriver
+brew install geckodriver
+brew install amtterm
+brew install npm
+mkdir meshcommander
+cd meshcommander
+npm install meshcommander
 ```
 License
 -------
