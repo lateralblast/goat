@@ -114,6 +114,13 @@ Available version:  0063
 BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update-DNKBLi5v-86A-
 Latest version of BIOS installed
 ```
+Start MeshCommander:
+
+```
+./goat.py --mesh
+MeshCommander running on http://127.0.0.1:3000.
+```
+
 
 Get the Memory configuration:
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool) 
-# Version:      0.1.3
+# Version:      0.1.4
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -26,6 +26,8 @@ import re
 # Set some defaults
 
 verbose_mode = False
+mesh_bin     = "meshcommander"
+mesh_port    = "3000"
 
 # Check we have pip installed
 
@@ -94,11 +96,13 @@ parser.add_argument("--search",required=False)        # Search output for value
 parser.add_argument("--avail",required=False)         # Get available version from vendor (e.g. BIOS)
 parser.add_argument("--check",required=False)         # Check current version against available version from vendor (e.g. BIOS)
 parser.add_argument("--model",required=False)         # Specify model (can be used with --avail)
+parser.add_argument("--port",required=False)          # Specify port to run service on
 parser.add_argument("--version",action='store_true')  # Display version 
 parser.add_argument("--insecure",action='store_true') # Use HTTP/Telnet
 parser.add_argument("--verbose",action='store_true')  # Enable verbose output
 parser.add_argument("--debug",action='store_true')    # Enable debug output
 parser.add_argument("--mask",action='store_true')     # Mask serial and hostname output output
+parser.add_argument("--mesh",action='store_true')     # Use Meshcommander
 
 option = vars(parser.parse_args())
 
@@ -393,6 +397,35 @@ def check_local_config():
         output = get_console_output("brew install geckodriver")
   return
 
+# Check mesh config
+
+def check_mesh_config(mesh_bin):
+  mesh_dir = "./%s" % (mesh_bin)
+  node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
+  if not os.path.exists(mesh_dir):
+    os.mkdir(mesh_dir)
+    uname = os.uname
+    if re.search("Darwin",uname):
+      if os.path.exists("/usr/local/bin/brew"):
+        if not os.path.exists("/usr/local/bin/npm"):
+          output  = get_console_output("brew install npm")
+      if not os.path.exists(node_dir):
+        command = "cd %s ; npm install meshcommander" % (mesh_dir)
+        output  = get_console_output(command)
+  return
+
+# Start MeshCommander
+
+def start_mesh(mesh_bin,mesh_port):
+  node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
+  if os.path.exists(node_dir):
+    command = "cd %s ; node %s --port %s" % (node_dir,mesh_bin,mesh_port)
+    os.system(command)
+  else:
+    string = "%s not installed" % (mesh_bin)
+    print(string)
+  return
+
 # Handle version switch
 
 if option["version"]:
@@ -481,6 +514,16 @@ if option["avail"]:
 if option["check"]:
   check = option["check"]
 
+# Handle port switch
+
+if option["port"]:
+  port = option["port"]
+
+# Handle mesh switch
+
+if option["mesh"]:
+  option["type"] = "amt"
+
 # Handle vendor switch
 
 if option["type"]:
@@ -488,6 +531,11 @@ if option["type"]:
   oob_type = option["type"]
   oob_type = oob_type.lower()
   if oob_type == "amt":
+    if option["mesh"]:
+      if option["port"]:
+        mesh_port = option["port"]
+      check_mesh_config(mesh_bin)
+      start_mesh(mesh_bin,mesh_port)
     if debug_mode == False:
       from selenium.webdriver.firefox.options import Options
       options = Options()
