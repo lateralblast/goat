@@ -34,3 +34,5 @@
 # Added initial code for dealing with passwords
 # 0.1.8: Fri 31 May 2019 07:01:31 AEST
 # Updated documentation and added support to connect over SOL
+# 0.1.9: Fri 31 May 2019 12:04:35 AEST
+# Fixed a couple of bugs and cleaned up web driver initiation

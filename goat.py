@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool) 
-# Version:      0.1.8
+# Version:      0.1.9
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -519,6 +519,18 @@ def sol_to_host(ip,password):
   os.system(command)
   return
 
+# Initiate web client
+
+def start_web_driver():
+  if debug_mode == False:
+    from selenium.webdriver.firefox.options import Options
+    options = Options()
+    options.headless = True
+    driver = webdriver.Firefox(options=options)
+  else:
+    driver = webdriver.Firefox()
+  return driver
+
 # Handle version switch
 
 if option["version"]:
@@ -556,16 +568,24 @@ else:
 if option["username"]:
   username = option["username"]
 else:
-  if option["type"] and not option["allhosts"]:
-    username = get_username(ip)
+  if option["avail"]:
+    if option["ip"]:
+      username = get_username(ip)
+  else:
+    if option["type"] and not option["allhosts"]:
+      username = get_username(ip)
 
 # Handle password switch
 
 if option["password"]:
   password = option["password"]
 else:
-  if option["type"] and not option["allhosts"]:
-    password = get_password(ip,username)
+  if option["avail"]:
+    if option["ip"]:
+      username = get_username(ip)
+  else:
+    if option["type"] and not option["allhosts"]:
+      password = get_password(ip,username)
 
 # Handle search switch
 
@@ -640,7 +660,15 @@ if option["type"]:
   if option["allhosts"]:
     ips = get_ips()
   else:
-    ips.append(ip)
+    if option["avail"] and not option["ip"]:
+      if not option["model"]:
+        print("Not model specified")
+        exit()
+      else:
+        driver = start_web_driver()
+        get_web_amt_value(avail,model,driver)
+    else:
+      ips.append(ip)
   for ip in ips:
     if option["allhosts"]:
       username = get_username(ip)
@@ -653,13 +681,7 @@ if option["type"]:
           mesh_port = option["port"]
         check_mesh_config(mesh_bin)
         start_mesh(mesh_bin,mesh_port)
-      if debug_mode == False:
-        from selenium.webdriver.firefox.options import Options
-        options = Options()
-        options.headless = True
-        driver = webdriver.Firefox(options=options)
-      else:
-        driver = webdriver.Firefox()
+      driver = start_web_driver()
       if option["check"]:
         model    = get_amt_value("model",ip,username,password,driver,http_proto,search)
         current  = get_amt_value(check,ip,username,password,driver,http_proto,search)
