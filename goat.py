@@ -290,6 +290,7 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
         get_value = re.sub("cpu", "version", get_value)
     if verbose_mode is True:
         string = "Connecting to: %s" % (full_url)
+        print(string)
     driver.get(full_url)
     html_doc = driver.page_source
     html_doc = BeautifulSoup(html_doc, 'html.parser')
@@ -346,7 +347,7 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
                                     value = "No"
                             else:
                                 param = plain_text
-                                html = html_data[counter+1]
+                                html = html_data[counter + 1]
                                 html = str(html)
                                 html = re.sub("^\<\/td\>", "", html)
                                 text = BeautifulSoup(
@@ -356,7 +357,7 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
                                 else:
                                     value = text
                                 if not re.search(r"[A-Z]|[a-z]|[0-9]", value):
-                                    html = html_data[counter+2]
+                                    html = html_data[counter + 2]
                                     html = str(html)
                                     html = re.sub("^\<\/td\>", "", html)
                                     text = BeautifulSoup(
@@ -371,7 +372,7 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
                             plain_text = re.sub(r":$", "", plain_text)
                             if re.search(r"[A-Z]|[a-z]|[0-9]", plain_text):
                                 results.append(plain_text)
-            counter = counter+1
+            counter = counter + 1
     if re.search("processor|system|memory|disk|event|fqdn|network", get_value):
         found = False
         for result in results:
@@ -420,7 +421,7 @@ def set_amt_value(set_value, ip, username, password, driver, http_proto, search)
         driver.find_element_by_xpath('//input[@value="3"]').click()
     if set_value == "reset":
         driver.find_element_by_xpath('//input[@value="4"]').click()
-    from selenium.webdriver.common.by import By
+    from selenium.webdriver.common.by import By   # noqa: F401
     driver.find_element_by_xpath('//input[@value="Send Command"]').click()
     time.sleep(2)
     object = driver.switch_to.alert
@@ -450,7 +451,7 @@ def compare_versions(bios, avail, oob_type):
 
 def get_console_output(command):
     if verbose_mode:
-        string = "Executing: "+command
+        string = "Executing: " + command
         print(string)
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, )
     output = process.communicate()[0].decode()
@@ -462,7 +463,7 @@ def get_console_output(command):
 def check_local_config():
     pkg_list = ["geckodriver", "amtterm", "npm"]
     pkg_dir = "/usr/local/bin"
-    brew_bin = "%s/brew" % (pkg_dir)
+    brew_bin = "%s/brew" % (pkg_dir)  # FIXME
     output = get_console_output("uname -a")
     if re.search("Darwin", output):
         for pkg_name in pkg_list:
@@ -484,7 +485,7 @@ def check_mesh_config(mesh_bin):
         if re.search("Darwin", uname):
             if not os.path.exists(node_dir):
                 command = "cd %s ; npm install meshcommander" % (mesh_dir)
-                output = get_console_output(command)
+                output = get_console_output(command)  # FIXME
     return
 
 # Start MeshCommander
