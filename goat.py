@@ -276,6 +276,7 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
     get_value = re.sub("cpu", "version", get_value)
   if verbose_mode is True:
     string = "Connecting to: %s" % (full_url)
+    print(string)
   driver.get(full_url)
   html_doc = driver.page_source
   html_doc = BeautifulSoup(html_doc, 'html.parser')
@@ -443,7 +444,7 @@ def get_console_output(command):
 def check_local_config():
   pkg_list = ["geckodriver", "amtterm", "npm"]
   pkg_dir = "/usr/local/bin"
-  brew_bin = "%s/brew" % (pkg_dir)
+  brew_bin = "%s/brew" % (pkg_dir)  # FIXME
   output = get_console_output("uname -a")
   if re.search("Darwin", output):
     for pkg_name in pkg_list:
@@ -465,7 +466,7 @@ def check_mesh_config(mesh_bin):
     if re.search("Darwin", uname):
       if not os.path.exists(node_dir):
         command = "cd %s ; npm install meshcommander" % (mesh_dir)
-        output = get_console_output(command)
+        output = get_console_output(command)   # FIXME
   return
 
 # Start MeshCommander
