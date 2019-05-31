@@ -41,7 +41,7 @@ default_user = "admin"
 
 try:
   from pip._internal import main
-except:
+except ImportError:
   os.system("easy_install pip")
 
 # install and import a python module
@@ -61,7 +61,7 @@ def install_and_import(package):
 
 try:
   from selenium import webdriver
-except:
+except ImportError:
   install_and_import("selenium")
   from selenium import webdriver
 
@@ -69,7 +69,7 @@ except:
 
 try:
   from bs4 import BeautifulSoup
-except:
+except ImportError:
   install_and_import("bs4")
   from bs4 import BeautifulSoup
 
@@ -205,7 +205,7 @@ def get_web_amt_value(avail, model, driver):
     html_data = html_doc.find_all('td')
     for html_line in html_data:
       html_text = str(html_line)
-      if debug_mode == True:
+      if debug_mode is True:
         print(html_text)
       if re.search("BIOS Update", html_text):
         link_stub = BeautifulSoup(html_text, features='lxml').a.get("href")
