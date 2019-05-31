@@ -41,7 +41,7 @@ default_user = "admin"
 
 try:
     from pip._internal import main
-except:
+except ImportError:
     os.system("easy_install pip")
 
 # install and import a python module
@@ -61,7 +61,7 @@ def install_and_import(package):
 
 try:
     from selenium import webdriver
-except:
+except ImportError:
     install_and_import("selenium")
     from selenium import webdriver
 
@@ -69,7 +69,7 @@ except:
 
 try:
     from bs4 import BeautifulSoup
-except:
+except ImportError:
     install_and_import("bs4")
     from bs4 import BeautifulSoup
 
@@ -217,14 +217,14 @@ def get_web_amt_value(avail, model, driver):
         html_data = html_doc.find_all('td')
         for html_line in html_data:
             html_text = str(html_line)
-            if debug_mode == True:
+            if debug_mode is True:
                 print(html_text)
             if re.search("BIOS Update", html_text):
                 link_stub = BeautifulSoup(
                     html_text, features='lxml').a.get("href")
                 bios_url = "%s/%s" % (base_url, link_stub)
                 found = True
-            if re.search("Latest", html_text) and found == True:
+            if re.search("Latest", html_text) and found is True:
                 version = BeautifulSoup(html_text, features='lxml').get_text()
                 version = re.sub("Latest", "", version)
                 string = "Available version:  %s" % (version)
@@ -239,7 +239,7 @@ def get_web_amt_value(avail, model, driver):
 
 
 def handle_output(output):
-    if mask_mode == True:
+    if mask_mode is True:
         if re.search(r"serial|address|host|id", output.lower()):
             if re.search(":", output):
                 (param, value) = output.split(":")
@@ -288,7 +288,7 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
     if re.search("processor|cpu|socket|family|manufacturer|speed", get_value):
         full_url = "%s/hw-proc.htm" % (base_url)
         get_value = re.sub("cpu", "version", get_value)
-    if verbose_mode == True:
+    if verbose_mode is True:
         string = "Connecting to: %s" % (full_url)
     driver.get(full_url)
     html_doc = driver.page_source
@@ -311,7 +311,7 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
         counter = 0
         for html_line in html_data:
             html_text = str(html_line)
-            if debug_mode == True:
+            if debug_mode is True:
                 print(html_text)
             if not re.search(r"hidden|onclick|colspan", html_text):
                 html_text = re.sub("^\<\/td\>", "", html_text)
@@ -375,13 +375,13 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
     if re.search("processor|system|memory|disk|event|fqdn|network", get_value):
         found = False
         for result in results:
-            if debug_mode == True:
+            if debug_mode is True:
                 print(result)
             if re.search(r"[a-z]", sub_value):
                 if re.search(sub_value, result.lower()):
                     found = True
                 if re.search(r"[A-Z]|[a-z]|[0-9]", search):
-                    if re.search(search, result) and found == True:
+                    if re.search(search, result) and found is True:
                         handle_output(result)
                         if re.search(r":", result):
                             result = result.split(": ")[1]
@@ -565,7 +565,7 @@ def sol_to_host(ip, password):
 
 
 def start_web_driver():
-    if debug_mode == False:
+    if debug_mode is False:
         from selenium.webdriver.firefox.options import Options
         options = Options()
         options.headless = True
@@ -588,7 +588,7 @@ if option["ip"]:
     string = ""
     ip = option["ip"]
     test = check_valid_ip(ip)
-    if test == False:
+    if test is False:
         string = "Invalid IP: %s" % (ip)
         print(string)
         exit()
