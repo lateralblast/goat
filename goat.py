@@ -403,7 +403,7 @@ def set_amt_value(set_value, ip, username, password, driver, http_proto, search)
     driver.find_element_by_xpath('//input[@value="3"]').click()
   if set_value == "reset":
     driver.find_element_by_xpath('//input[@value="4"]').click()
-  from selenium.webdriver.common.by import By
+  from selenium.webdriver.common.by import By  # noqa: F401
   driver.find_element_by_xpath('//input[@value="Send Command"]').click()
   time.sleep(2)
   object = driver.switch_to.alert
