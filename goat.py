@@ -732,7 +732,7 @@ if option["type"]:
       if option["avail"]:
         if not option["model"]:
           model = get_amt_value("model",ip,username,password,driver,http_proto,search)
-        get_web_amt_value(avail,model,driver)
+        get_web_amt_value(avail,model,driver,download)
       if option["get"]:
         get_amt_value(get_value,ip,username,password,driver,http_proto,search)
       if option["set"]:
