@@ -202,6 +202,12 @@ Ubuntu 18.04.2 LTS inn01 ttyS4
 inn01 login:
 ```
 
+Set hostname:
+
+```
+./goat.py --ip 192.168.1.171 --set hostname --value ecs01 --type amt
+```
+
 Get BIOS version:
 
 ```
