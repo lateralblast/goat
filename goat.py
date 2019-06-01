@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.1.9
+# Version:      0.2.0
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -217,7 +217,7 @@ def handle_output(output):
   if mask_mode == True:
     if re.search(r"serial|address|host|id",output.lower()):
       if re.search(":",output):
-        (param,value) = output.split(":")
+        param  = output.split(":")[0]
         output = "%s: XXXXXXXX" % (param)
   print(output)
   return
@@ -263,6 +263,7 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
     get_value = re.sub("cpu","version",get_value)
   if verbose_mode == True:
     string = "Connecting to: %s" % (full_url)
+    print(string)
   driver.get(full_url)
   html_doc  = driver.page_source
   html_doc  = BeautifulSoup(html_doc,'html.parser')
@@ -287,10 +288,10 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
       if debug_mode == True:
         print(html_text)
       if not re.search(r"hidden|onclick|colspan",html_text):
-        html_text  = re.sub("^\<\/td\>","",html_text)
-        html_text  = re.sub("\<br\/\>",",",html_text)
+        html_text  = re.sub(r"^\<\/td\>","",html_text)
+        html_text  = re.sub(r"\<br\/\>",",",html_text)
         plain_text = BeautifulSoup(html_text,features='lxml').get_text()
-        plain_text = re.sub("\s+"," ",plain_text)
+        plain_text = re.sub(r"\s+"," ",plain_text)
         plain_text = re.sub(r"^ | $","",plain_text)
         if re.search("event",get_value):
           if re.search("border=",html_text):
@@ -309,7 +310,7 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
           if re.search(r"\<\/h1\>|\<\/h2\>",html_text):
             results.append(plain_text)
           else:
-            if re.search("\<\/p\>",html_text):
+            if re.search(r"\<\/p\>",html_text):
               if re.search("checkbox",html_text):
                 param = plain_text
                 if re.search("checked",html_text):
@@ -320,7 +321,7 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
                 param = plain_text
                 html  = html_data[counter+1]
                 html  = str(html)
-                html  = re.sub("^\<\/td\>","",html)
+                html  = re.sub(r"^\<\/td\>","",html)
                 text  = BeautifulSoup(html,features='lxml').get_text()
                 if re.search("value=",html) and not re.search(r"[A-Z]|[a-z]|[0-9]",text):
                   value = html.split('"')[-2]
@@ -329,7 +330,7 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
                 if not re.search(r"[A-Z]|[a-z]|[0-9]",value):
                   html = html_data[counter+2]
                   html = str(html)
-                  html = re.sub("^\<\/td\>","",html)
+                  html = re.sub(r"^\<\/td\>","",html)
                   text = BeautifulSoup(html,features='lxml').get_text()
                   if re.search("value=",html) and not re.search(r"[A-Z]|[a-z]|[0-9]",text):
                     value = html.split('"')[-2]
@@ -432,7 +433,7 @@ def check_local_config():
     for pkg_name in pkg_list:
       pkg_bin = "%s/%s" % (pkg_dir,pkg_name)
       if not os.path.exists(pkg_bin):
-        command = "brew install %s" % (pkg_name)
+        command = "%s install %s" % (brew_bin, pkg_name)
         output  = get_console_output(command)
   return
 
@@ -448,6 +449,8 @@ def check_mesh_config(mesh_bin):
       if not os.path.exists(node_dir):
         command = "cd %s ; npm install meshcommander" % (mesh_dir)
         output  = get_console_output(command)
+        if verbose_mode == True:
+          print(output)
   return
 
 # Start MeshCommander
@@ -470,7 +473,7 @@ def get_ips():
     data = file.readlines()
     for line in data:
       line.rstrip()
-      (file_ip,file_user,file_pass) = line.split(":")
+      file_ip = line.split(":")[0]
       ips.append(file_ip)
   return ips
 
@@ -484,7 +487,8 @@ def get_username(ip):
     data = file.readlines()
     for line in data:
       line.rstrip()
-      (file_ip,file_user,file_pass) = line.split(":")
+      file_user = line.split(":")[1]
+      file_ip   = line.split(":")[0]
       if file_ip == ip:
         return file_user
   else:

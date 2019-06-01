@@ -36,3 +36,5 @@
 # Updated documentation and added support to connect over SOL
 # 0.1.9: Fri 31 May 2019 12:04:35 AEST
 # Fixed a couple of bugs and cleaned up web driver initiation
+# 0.2.0: Sat  1 Jun 2019 19:42:53 AEST
+# Code cleanup
