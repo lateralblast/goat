@@ -40,3 +40,5 @@
 # Code cleanup
 # 0.2.1: Sat  1 Jun 2019 20:50:53 AEST
 # Added code to set hostname and domainname
+# 0.2.2: Sat  1 Jun 2019 22:19:31 AEST
+# Added code to download BIOS

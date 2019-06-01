@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.2.1
+# Version:      0.2.2
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -20,6 +20,7 @@ import argparse
 import binascii
 import hashlib
 import getpass
+import urllib
 import socket
 import time
 import sys
@@ -115,6 +116,7 @@ parser.add_argument("--mesh",action='store_true')     # Use Meshcommander
 parser.add_argument("--options",action='store_true')  # Display options information
 parser.add_argument("--allhosts",action='store_true') # Automate via .goatpass
 parser.add_argument("--sol",action='store_true')      # Start a SOL connection to host
+parser.add_argument("--download",action='store_true') # Download BIOS
 
 option = vars(parser.parse_args())
 
@@ -165,8 +167,7 @@ def check_valid_ip(ip):
 
 def hash_password(password):
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
-    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
-                                  salt, 100000)
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), salt, 100000)
     pwdhash = binascii.hexlify(pwdhash)
     return (salt + pwdhash).decode('ascii')
 
@@ -176,15 +177,14 @@ def verify_password(stored_password, provided_password):
     salt = stored_password[:64]
     stored_password = stored_password[64:]
     pwdhash = hashlib.pbkdf2_hmac('sha512',
-                                  provided_password.encode('utf-8'),
-                                  salt.encode('ascii'),
-                                  100000)
+    provided_password.encode('utf-8'),
+    salt.encode('ascii'), 100000)
     pwdhash = binascii.hexlify(pwdhash).decode('ascii')
     return pwdhash == stored_password
 
 # Get AMT value from web
 
-def get_web_amt_value(avail,model,driver):
+def get_web_amt_value(avail,model,driver,download):
   if avail == "bios":
     found    = False
     base_url = "https://downloadcenter.intel.com"
@@ -208,8 +208,21 @@ def get_web_amt_value(avail,model,driver):
         print(string)
         string  = "BIOS Download link: %s" % (bios_url)
         print(string)
+        if download == True:
+          from selenium.webdriver.common.by import By
+          driver.get(bios_url)    
+          html   = driver.page_source
+          html   = BeautifulSoup(html,'html.parser')
+          html   = html.findAll("a", text=re.compile(r"\.bio"))[0]
+          html   = str(html)
+          link   = html.split('"')[3]
+          file   = os.path.basename(link)
+          string = "Downloading %s to %s" % (link,file)
+          print(string)
+          urllib.request.urlretrieve(link,file)
         driver.quit()
         return version
+    driver.quit()
   return
 
 # Handle output
@@ -672,6 +685,13 @@ if option["mesh"]:
 if option["value"]:
   value = option["value"]
 
+# Hadnle download value
+
+if option["download"]:
+  download = True
+else:
+  download = False
+
 # Handle vendor switch
 
 if option["type"]:
@@ -688,7 +708,7 @@ if option["type"]:
         exit()
       else:
         driver = start_web_driver()
-        get_web_amt_value(avail,model,driver)
+        get_web_amt_value(avail,model,driver,download)
     else:
       ips.append(ip)
   for ip in ips:
@@ -707,7 +727,7 @@ if option["type"]:
       if option["check"]:
         model    = get_amt_value("model",ip,username,password,driver,http_proto,search)
         current  = get_amt_value(check,ip,username,password,driver,http_proto,search)
-        avail    = get_web_amt_value(check,model,driver)
+        avail    = get_web_amt_value(check,model,driver,download)
         compare_versions(current,avail,oob_type)
       if option["avail"]:
         if not option["model"]:

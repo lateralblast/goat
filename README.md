@@ -16,6 +16,8 @@ Some features:
 
 - Get system information (e.g. Serial, Model, Logs, etc)
 - Check BIOS version
+- Download BIOS
+- Set hostname and domainname for OOB device
 - Remotely reset device
 - Start MeshCommander in order to do other manage tasks (e.g. configure certificates)
 - Start amtterm for connecting to the AMT SOL (requires non TLS/Digest access to be enabled)
@@ -241,6 +243,15 @@ Version: DNKBLi5v.86A.0063.2019.0503.1714
 Available version:  0063
 BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update-DNKBLi5v-86A-
 Latest version of BIOS installed
+```
+
+Download BIOS for a specific model:
+
+```
+./goat.py --avail bios --model NUC7i5DNKE --type amt --download
+Available version:  0063
+BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update-DNKBLi5v-86A-
+Downloading https://downloadmirror.intel.com/28789/eng/DNi50063.bio to DNi50063.bio
 ```
 
 Reset device:
