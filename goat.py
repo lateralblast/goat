@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-# Name:         goat (General OOB Automation Tool) 
+# Name:         goat (General OOB Automation Tool)
 # Version:      0.1.9
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
 # Group:        System
 # Source:       N/A
-# URL:          N/A 
+# URL:          N/A
 # Distribution: UNIX
 # Vendor:       Lateral Blast
 # Packager:     Richard Spindler <richard@lateralblast.com.au>
@@ -41,7 +41,7 @@ default_user = "admin"
 
 try:
   from pip._internal import main
-except:
+except ImportError:
   os.system("easy_install pip")
 
 # install and import a python module
@@ -59,15 +59,15 @@ def install_and_import(package):
 
 try:
   from selenium import webdriver
-except:
+except ImportError:
   install_and_import("selenium")
   from selenium import webdriver
 
 # Load bs4
 
 try:
-  from bs4 import BeautifulSoup 
-except:
+  from bs4 import BeautifulSoup
+except ImportError:
   install_and_import("bs4")
   from bs4 import BeautifulSoup
 
@@ -105,7 +105,7 @@ parser.add_argument("--avail",required=False)         # Get available version fr
 parser.add_argument("--check",required=False)         # Check current version against available version from vendor (e.g. BIOS)
 parser.add_argument("--model",required=False)         # Specify model (can be used with --avail)
 parser.add_argument("--port",required=False)          # Specify port to run service on
-parser.add_argument("--version",action='store_true')  # Display version 
+parser.add_argument("--version",action='store_true')  # Display version
 parser.add_argument("--insecure",action='store_true') # Use HTTP/Telnet
 parser.add_argument("--verbose",action='store_true')  # Enable verbose output
 parser.add_argument("--debug",action='store_true')    # Enable debug output
@@ -149,7 +149,7 @@ def check_valid_ip(ip):
   if not re.search(r"[a-z]",ip):
     try:
       socket.inet_pton(socket.AF_INET, ip)
-    except AttributeError:  
+    except AttributeError:
       try:
         socket.inet_aton(ip)
       except socket.error:
@@ -164,19 +164,19 @@ def check_valid_ip(ip):
 
 def hash_password(password):
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
-    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), 
-                                salt, 100000)
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
+                                  salt, 100000)
     pwdhash = binascii.hexlify(pwdhash)
     return (salt + pwdhash).decode('ascii')
 
 # Verify a stored password against one provided by user
- 
+
 def verify_password(stored_password, provided_password):
     salt = stored_password[:64]
     stored_password = stored_password[64:]
-    pwdhash = hashlib.pbkdf2_hmac('sha512', 
-                                  provided_password.encode('utf-8'), 
-                                  salt.encode('ascii'), 
+    pwdhash = hashlib.pbkdf2_hmac('sha512',
+                                  provided_password.encode('utf-8'),
+                                  salt.encode('ascii'),
                                   100000)
     pwdhash = binascii.hexlify(pwdhash).decode('ascii')
     return pwdhash == stored_password
