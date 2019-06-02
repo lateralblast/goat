@@ -129,33 +129,45 @@ Examples
 Getting help:
 
 ```
-$ ./goat.py --help
+./goat.py --help
 usage: goat.py [-h] [--ip IP] [--username USERNAME] [--type TYPE] [--get GET]
-               [--set SET] [--password PASSWORD] [--search SEARCH]
-               [--avail AVAIL] [--check CHECK] [--model MODEL] [--port PORT]
+               [--password PASSWORD] [--search SEARCH] [--avail AVAIL]
+               [--check CHECK] [--model MODEL] [--port PORT] [--power POWER]
+               [--hostname HOSTNAME] [--domainname DOMAINNAME]
+               [--primarydns PRIMARYDNS] [--secondarydns SECONDARYDNS] [--set]
                [--version] [--insecure] [--verbose] [--debug] [--mask]
-               [--mesh]
+               [--meshcommander] [--meshcentral] [--options] [--allhosts]
+               [--sol] [--download]
 
 optional arguments:
-  -h, --help           show this help message and exit
+  -h, --help            show this help message and exit
   --ip IP
   --username USERNAME
   --type TYPE
   --get GET
-  --set SET
   --password PASSWORD
   --search SEARCH
   --avail AVAIL
   --check CHECK
   --model MODEL
   --port PORT
+  --power POWER
+  --hostname HOSTNAME
+  --domainname DOMAINNAME
+  --primarydns PRIMARYDNS
+  --secondarydns SECONDARYDNS
+  --set
   --version
   --insecure
   --verbose
   --debug
   --mask
-  --mesh
+  --meshcommander
+  --meshcentral
   --options
+  --allhosts
+  --sol
+  --download
 ```
 
 Getting information about options:
@@ -165,24 +177,33 @@ Getting information about options:
 
 Options:
 
---ip          Specify IP of OOB/Remote Management interface
---username    Set Username
---type        Set Type
---get         Get Parameter
---set         Set Parameter
---password    Set Password
---search      Search output for value
---avail       Get available version from vendor (e.g. BIOS)
---check       Check current version against available version from vendor (e.g. BIOS)
---model       Specify model (can be used with --avail)
---port        Specify port to run service on
---version     Display version
---insecure    Use HTTP/Telnet
---verbose     Enable verbose output
---debug       Enable debug output
---mask        Mask serial and hostname output output
---mesh        Use Meshcommander
---options     Display options information
+--ip		        Specify IP of OOB/Remote Management interface
+--username	    Set Username
+--type		      Set Type
+--get		        Get Parameter
+--password	    Set Password
+--search	      Search output for value
+--avail		      Get available version from vendor (e.g. BIOS)
+--check		      Check current version against available version from vendor (e.g. BIOS)
+--model		      Specify model (can be used with --avail)
+--port		      Specify port to run service on
+--power		      Set power state (on, off, reset)
+--hostname	    Set hostname
+--domainname	  Set dommainname
+--primarydns	  Set primary DHS
+--secondarydns	Set secondary DNS
+--set		        Set value
+--version	      Display version
+--insecure	    Use HTTP/Telnet
+--verbose	      Enable verbose output
+--debug		      Enable debug output
+--mask		      Mask serial and hostname output output
+--meshcommander	Use Meshcommander
+--meshcentral	  Use Meshcentral
+--options	      Display options information
+--allhosts	    Automate via .goatpass
+--sol		        Start a SOL connection to host
+--download	    Download BIOSn
 ```
 
 Connecting to host over SOL:

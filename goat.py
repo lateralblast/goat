@@ -407,6 +407,8 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
       field = driver.find_element_by_name(search)
       field.clear()
       field.send_keys(hostname)
+      string = "Setting Hostname to %s" % (hostname)
+      print(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
     if re.search(r"[a-z]",domainname):
       search = "DomainName"
@@ -415,6 +417,8 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
       field = driver.find_element_by_name(search)
       field.clear()
       field.send_keys(domainname)
+      string = "Setting Domainname to %s" % (domainname)
+      print(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
   if re.search(r"[a-z]",primarydns) or (r"[a-z]",secondarydns):
     full_url = "%s/ip.htm" % (base_url)
@@ -425,6 +429,8 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
       field = driver.find_element_by_name(search)
       field.clear()
       field.send_keys(primarydns)
+      string = "Setting Primary DNS to %s" % (primarydns)
+      print(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
     if re.search(r"[a-z]",secondarydns):
       search = "AlternativeDns"
@@ -433,6 +439,8 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
       field = driver.find_element_by_name(search)
       field.clear()
       field.send_keys(secondarydns)
+      string = "Setting Secondary DNS to %s" % (secondarydns)
+      print(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
   if re.search(r"[a-z]",power):
     full_url = "%s/remote.htm" % (base_url)
