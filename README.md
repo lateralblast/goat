@@ -177,33 +177,33 @@ Getting information about options:
 
 Options:
 
---ip		        Specify IP of OOB/Remote Management interface
---username	    Set Username
---type		      Set Type
---get		        Get Parameter
---password	    Set Password
---search	      Search output for value
---avail		      Get available version from vendor (e.g. BIOS)
---check		      Check current version against available version from vendor (e.g. BIOS)
---model		      Specify model (can be used with --avail)
---port		      Specify port to run service on
---power		      Set power state (on, off, reset)
---hostname	    Set hostname
---domainname	  Set dommainname
---primarydns	  Set primary DHS
---secondarydns	Set secondary DNS
---set		        Set value
---version	      Display version
---insecure	    Use HTTP/Telnet
---verbose	      Enable verbose output
---debug		      Enable debug output
---mask		      Mask serial and hostname output output
---meshcommander	Use Meshcommander
---meshcentral	  Use Meshcentral
---options	      Display options information
---allhosts	    Automate via .goatpass
---sol		        Start a SOL connection to host
---download	    Download BIOSn
+--ip              Specify IP of OOB/Remote Management interface
+--username        Set Username
+--type            Set Type
+--get             Get Parameter
+--password        Set Password
+--search          Search output for value
+--avail           Get available version from vendor (e.g. BIOS)
+--check           Check current version against available version from vendor (e.g. BIOS)
+--model           Specify model (can be used with --avail)
+--port            Specify port to run service on
+--power           Set power state (on, off, reset)
+--hostname        Set hostname
+--domainname      Set dommainname
+--primarydns      Set primary DHS
+--secondarydns    Set secondary DNS
+--set             Set value
+--version         Display version
+--insecure        Use HTTP/Telnet
+--verbose         Enable verbose output
+--debug           Enable debug output
+--mask            Mask serial and hostname output output
+--meshcommander   Use Meshcommander
+--meshcentral     Use Meshcentral
+--options         Display options information
+--allhosts        Automate via .goatpass
+--sol             Start a SOL connection to host
+--download        Download BIOSn
 ```
 
 Connecting to host over SOL:
