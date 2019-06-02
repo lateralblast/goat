@@ -46,3 +46,5 @@
 # Added code to start MeshCentral
 # 0.2.4: Sun  2 Jun 2019 21:04:00 AEST
 # Updated set code to deal with more options
+# 0.2.5: Sun  2 Jun 2019 21:21:28 AEST
+# Added code to set primary and secondary DNS for AMT

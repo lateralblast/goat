@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.2.4
+# Version:      0.2.5
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -107,6 +107,8 @@ parser.add_argument("--port",required=False)                # Specify port to ru
 parser.add_argument("--power",required=False)               # Set power state (on, off, reset)
 parser.add_argument("--hostname",required=False)            # Set hostname
 parser.add_argument("--domainname",required=False)          # Set dommainname
+parser.add_argument("--primarydns",required=False)          # Set primary DHS
+parser.add_argument("--secondarydns",required=False)        # Set secondary DNS
 parser.add_argument("--set",action='store_true')            # Set value
 parser.add_argument("--version",action='store_true')        # Display version
 parser.add_argument("--insecure",action='store_true')       # Use HTTP/Telnet
@@ -390,7 +392,7 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
 
 # Set AMT value
 
-def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,power):
+def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,primarydns,secondarydns,power):
   if http_proto == "http":
     port_no = "16992"
   else:
@@ -413,6 +415,24 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,po
       field = driver.find_element_by_name(search)
       field.clear()
       field.send_keys(domainname)
+      driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
+  if re.search(r"[a-z]",primarydns) or (r"[a-z]",secondarydns):
+    full_url = "%s/ip.htm" % (base_url)
+    if re.search(r"[a-z]",primarydns):
+      search = "DNSServer"
+      driver.get(full_url)
+      from selenium.webdriver.common.by import By
+      field = driver.find_element_by_name(search)
+      field.clear()
+      field.send_keys(primarydns)
+      driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
+    if re.search(r"[a-z]",secondarydns):
+      search = "AlternativeDns"
+      driver.get(full_url)
+      from selenium.webdriver.common.by import By
+      field = driver.find_element_by_name(search)
+      field.clear()
+      field.send_keys(secondarydns)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
   if re.search(r"[a-z]",power):
     full_url = "%s/remote.htm" % (base_url)
@@ -481,7 +501,7 @@ def check_mesh_config(mesh_bin):
   uname = os.uname()[0]
   if re.search("Darwin",uname):
     if not os.path.exists(node_dir):
-      command = "cd %s ; npm install %" % (mesh_dir,mesh_bin)
+      command = "cd %s ; npm install %s" % (mesh_dir,mesh_bin)
       output  = get_console_output(command)
       if verbose_mode == True:
         print(output)
@@ -685,6 +705,20 @@ if option["hostname"]:
 else:
   hostname = ""    
 
+# Handle primarydns switch
+
+if option["primarydns"]:
+  primarydns = option["primarydns"]
+else:
+  primarydns = "" 
+
+# Handle secondarydns switch
+
+if option["secondarydns"]:
+  secondarydns = option["secondarydns"]
+else:
+  secondarydns = "" 
+
 # Handle avail switch
 
 if option["avail"]:
@@ -766,7 +800,7 @@ if option["type"]:
       if option["get"]:
         get_amt_value(get_value,ip,username,password,driver,http_proto,search)
       if option["set"]:
-        set_amt_value(ip,username,password,driver,http_proto,hostname,domainname,power)
+        set_amt_value(ip,username,password,driver,http_proto,hostname,domainname,primarydns,secondarydns,power)
 else:
   print("No OOB type specified")
   exit()
