@@ -209,7 +209,7 @@ Options:
 Connecting to host over SOL:
 
 ```
-$ ./goat.py --ip 192.168.1.171 --sol --type amt
+./goat.py --ip 192.168.1.171 --sol --type amt
 Password for 192.168.1.171:
 amtterm: NONE -> CONNECT (connection to host)
 ipv4 (null) [192.168.1.171] 16994 open
