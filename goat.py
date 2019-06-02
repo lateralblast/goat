@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.2.3
+# Version:      0.2.4
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -98,14 +98,16 @@ parser.add_argument("--ip",required=False)                  # Specify IP of OOB/
 parser.add_argument("--username",required=False)            # Set Username
 parser.add_argument("--type",required=False)                # Set Type
 parser.add_argument("--get",required=False)                 # Get Parameter
-parser.add_argument("--set",required=False)                 # Set Parameter
 parser.add_argument("--password",required=False)            # Set Password
 parser.add_argument("--search",required=False)              # Search output for value
 parser.add_argument("--avail",required=False)               # Get available version from vendor (e.g. BIOS)
 parser.add_argument("--check",required=False)               # Check current version against available version from vendor (e.g. BIOS)
 parser.add_argument("--model",required=False)               # Specify model (can be used with --avail)
 parser.add_argument("--port",required=False)                # Specify port to run service on
-parser.add_argument("--value",required=False)               # Set value
+parser.add_argument("--power",required=False)               # Set power state (on, off, reset)
+parser.add_argument("--hostname",required=False)            # Set hostname
+parser.add_argument("--domainname",required=False)          # Set dommainname
+parser.add_argument("--set",action='store_true')            # Set value
 parser.add_argument("--version",action='store_true')        # Display version
 parser.add_argument("--insecure",action='store_true')       # Use HTTP/Telnet
 parser.add_argument("--verbose",action='store_true')        # Enable verbose output
@@ -388,41 +390,47 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
 
 # Set AMT value
 
-def set_amt_value(set_value,ip,username,password,driver,http_proto,search,value):
+def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,power):
   if http_proto == "http":
     port_no = "16992"
   else:
     port_no = "16993"
   base_url = "%s://%s:%s@%s:%s" % (http_proto,username,password,ip,port_no)
-  if re.search(r"power|reset",set_value):
-    full_url = "%s/remote.htm" % (base_url)
-  if re.search(r"hostname|domainname",set_value):
+  if re.search(r"[a-z]",hostname) or (r"[a-z]",domainname):
     full_url = "%s/fqdn.htm" % (base_url)
-  driver.get(full_url)
-  from selenium.webdriver.common.by import By
-  if re.search(r"power|reset",set_value):
-    if set_value == "poweroff":
+    if re.search(r"[a-z]",hostname):
+      search = "HostName"
+      driver.get(full_url)
+      from selenium.webdriver.common.by import By
+      field = driver.find_element_by_name(search)
+      field.clear()
+      field.send_keys(hostname)
+      driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
+    if re.search(r"[a-z]",domainname):
+      search = "DomainName"
+      driver.get(full_url)
+      from selenium.webdriver.common.by import By
+      field = driver.find_element_by_name(search)
+      field.clear()
+      field.send_keys(domainname)
+      driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
+  if re.search(r"[a-z]",power):
+    full_url = "%s/remote.htm" % (base_url)
+    if re.search(r"off",power):
       driver.find_element_by_xpath('//input[@value="1"]').click()
-    if set_value == "powercycle":
+    if re.search(r"cycle",power):
       driver.find_element_by_xpath('//input[@value="3"]').click()
-    if set_value == "reset":
+    if re.search(r"reset",power):
       driver.find_element_by_xpath('//input[@value="4"]').click()
+    driver.get(full_url)
+    from selenium.webdriver.common.by import By
     driver.find_element_by_xpath('//input[@value="Send Command"]').click()
     time.sleep(2)
     object = driver.switch_to.alert
     time.sleep(2)
     object.accept()
-    string = "Sending %s to %s (Intel AMT has a 30s pause before operation is done)" % (set_value,ip)
+    string = "Sending power %s to %s (Intel AMT has a 30s pause before operation is done)" % (power,ip)
     print(string)
-  if re.search(r"hostname|domainname",set_value):
-    if re.search("hostname",set_value):
-      search = "HostName"
-    else:
-      search = "DomainName"
-    field = driver.find_element_by_name(search)
-    field.clear()
-    field.send_keys(value)
-    driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
   driver.quit()
   return
 
@@ -656,10 +664,26 @@ else:
 if option["get"]:
   get_value = option["get"]
 
-# Handle set switch
+# Handle power switch
 
-if option["set"]:
-  set_value = option["set"]
+if option["power"]:
+  power = option["power"]
+else:
+  power = ""
+
+# Handle domainname switch
+
+if option["domainname"]:
+  domainname = option["domainname"]
+else:
+  domainname = ""    
+
+# Handle hostname switch
+
+if option["hostname"]:
+  hostname = option["hostname"]
+else:
+  hostname = ""    
 
 # Handle avail switch
 
@@ -685,11 +709,6 @@ if option["meshcommander"]:
 
 if option["meshcentral"]:
   mesh_bin = "meshcentral"
-
-# Handle value switch
-
-if option["value"]:
-  value = option["value"]
 
 # Hadnle download value
 
@@ -747,7 +766,7 @@ if option["type"]:
       if option["get"]:
         get_amt_value(get_value,ip,username,password,driver,http_proto,search)
       if option["set"]:
-        set_amt_value(set_value,ip,username,password,driver,http_proto,search,value)
+        set_amt_value(ip,username,password,driver,http_proto,hostname,domainname,power)
 else:
   print("No OOB type specified")
   exit()

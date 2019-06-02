@@ -207,7 +207,7 @@ inn01 login:
 Set hostname:
 
 ```
-./goat.py --ip 192.168.1.171 --set hostname --value ecs01 --type amt
+./goat.py --ip 192.168.1.171 --set --hostname ecs01 --type amt
 ```
 
 Get BIOS version:
@@ -257,8 +257,8 @@ Downloading https://downloadmirror.intel.com/28789/eng/DNi50063.bio to DNi50063.
 Reset device:
 
 ```
-./goat.py --ip 192.168.1.171 --set reset --type amt
-Sending reset to 192.168.1.171 (Intel AMT has a 30s pause before operation is done)
+./goat.py --ip 192.168.1.171 --set --power reset --type amt
+Sending power reset to 192.168.1.171 (Intel AMT has a 30s pause before operation is done)
 ```
 
 Start MeshCommander:
