@@ -42,3 +42,5 @@
 # Added code to set hostname and domainname
 # 0.2.2: Sat  1 Jun 2019 22:19:31 AEST
 # Added code to download BIOS
+# 0.2.3: Sun  2 Jun 2019 13:42:10 AEST
+# Added code to start MeshCentral

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.2.2
+# Version:      0.2.3
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -32,7 +32,6 @@ from os.path import expanduser
 # Set some defaults
 
 verbose_mode = False
-mesh_bin     = "meshcommander"
 mesh_port    = "3000"
 password_db  = "goatpass"
 home_dir     = expanduser("~")
@@ -95,28 +94,29 @@ if sys.argv[-1] == sys.argv[0]:
 # Get command line arguments
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--ip",required=False)            # Specify IP of OOB/Remote Management interface
-parser.add_argument("--username",required=False)      # Set Username
-parser.add_argument("--type",required=False)          # Set Type
-parser.add_argument("--get",required=False)           # Get Parameter
-parser.add_argument("--set",required=False)           # Set Parameter
-parser.add_argument("--password",required=False)      # Set Password
-parser.add_argument("--search",required=False)        # Search output for value
-parser.add_argument("--avail",required=False)         # Get available version from vendor (e.g. BIOS)
-parser.add_argument("--check",required=False)         # Check current version against available version from vendor (e.g. BIOS)
-parser.add_argument("--model",required=False)         # Specify model (can be used with --avail)
-parser.add_argument("--port",required=False)          # Specify port to run service on
-parser.add_argument("--value",required=False)         # Set value
-parser.add_argument("--version",action='store_true')  # Display version
-parser.add_argument("--insecure",action='store_true') # Use HTTP/Telnet
-parser.add_argument("--verbose",action='store_true')  # Enable verbose output
-parser.add_argument("--debug",action='store_true')    # Enable debug output
-parser.add_argument("--mask",action='store_true')     # Mask serial and hostname output output
-parser.add_argument("--mesh",action='store_true')     # Use Meshcommander
-parser.add_argument("--options",action='store_true')  # Display options information
-parser.add_argument("--allhosts",action='store_true') # Automate via .goatpass
-parser.add_argument("--sol",action='store_true')      # Start a SOL connection to host
-parser.add_argument("--download",action='store_true') # Download BIOS
+parser.add_argument("--ip",required=False)                  # Specify IP of OOB/Remote Management interface
+parser.add_argument("--username",required=False)            # Set Username
+parser.add_argument("--type",required=False)                # Set Type
+parser.add_argument("--get",required=False)                 # Get Parameter
+parser.add_argument("--set",required=False)                 # Set Parameter
+parser.add_argument("--password",required=False)            # Set Password
+parser.add_argument("--search",required=False)              # Search output for value
+parser.add_argument("--avail",required=False)               # Get available version from vendor (e.g. BIOS)
+parser.add_argument("--check",required=False)               # Check current version against available version from vendor (e.g. BIOS)
+parser.add_argument("--model",required=False)               # Specify model (can be used with --avail)
+parser.add_argument("--port",required=False)                # Specify port to run service on
+parser.add_argument("--value",required=False)               # Set value
+parser.add_argument("--version",action='store_true')        # Display version
+parser.add_argument("--insecure",action='store_true')       # Use HTTP/Telnet
+parser.add_argument("--verbose",action='store_true')        # Enable verbose output
+parser.add_argument("--debug",action='store_true')          # Enable debug output
+parser.add_argument("--mask",action='store_true')           # Mask serial and hostname output output
+parser.add_argument("--meshcommander",action='store_true')  # Use Meshcommander
+parser.add_argument("--meshcentral",action='store_true')    # Use Meshcentral
+parser.add_argument("--options",action='store_true')        # Display options information
+parser.add_argument("--allhosts",action='store_true')       # Automate via .goatpass
+parser.add_argument("--sol",action='store_true')            # Start a SOL connection to host
+parser.add_argument("--download",action='store_true')       # Download BIOS
 
 option = vars(parser.parse_args())
 
@@ -470,19 +470,20 @@ def check_mesh_config(mesh_bin):
   node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
   if not os.path.exists(mesh_dir):
     os.mkdir(mesh_dir)
-    uname = os.uname
-    if re.search("Darwin",uname):
-      if not os.path.exists(node_dir):
-        command = "cd %s ; npm install meshcommander" % (mesh_dir)
-        output  = get_console_output(command)
-        if verbose_mode == True:
-          print(output)
+  uname = os.uname()[0]
+  if re.search("Darwin",uname):
+    if not os.path.exists(node_dir):
+      command = "cd %s ; npm install %" % (mesh_dir,mesh_bin)
+      output  = get_console_output(command)
+      if verbose_mode == True:
+        print(output)
   return
 
 # Start MeshCommander
 
 def start_mesh(mesh_bin,mesh_port):
   node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
+  print(node_dir)
   if os.path.exists(node_dir):
     command = "cd %s ; node %s --port %s" % (node_dir,mesh_bin,mesh_port)
     os.system(command)
@@ -675,10 +676,15 @@ if option["check"]:
 if option["port"]:
   port = option["port"]
 
-# Handle mesh switch
+# Handle meshcommander switch
 
-if option["mesh"]:
-  option["type"] = "amt"
+if option["meshcommander"]:
+  mesh_bin = "meshcommander"
+
+# Handle meshcentral switch
+
+if option["meshcentral"]:
+  mesh_bin = "meshcentral"
 
 # Handle value switch
 
@@ -691,6 +697,15 @@ if option["download"]:
   download = True
 else:
   download = False
+
+# Run meshcommander
+
+if option["meshcommander"] or option["meshcentral"]:
+  if option["port"]:
+    mesh_port = option["port"]
+  check_mesh_config(mesh_bin)
+  start_mesh(mesh_bin,mesh_port)
+  exit()
 
 # Handle vendor switch
 
@@ -718,12 +733,8 @@ if option["type"]:
     if oob_type == "amt":
       if option["sol"]:
         sol_to_host(ip,password)
-      if option["mesh"]:
-        if option["port"]:
-          mesh_port = option["port"]
-        check_mesh_config(mesh_bin)
-        start_mesh(mesh_bin,mesh_port)
-      driver = start_web_driver()
+      else:
+        driver = start_web_driver()
       if option["check"]:
         model    = get_amt_value("model",ip,username,password,driver,http_proto,search)
         current  = get_amt_value(check,ip,username,password,driver,http_proto,search)
