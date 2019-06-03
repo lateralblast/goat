@@ -43,6 +43,7 @@ try:
   from pip._internal import main
 except ImportError:
   os.system("easy_install pip")
+  os.system("pip install --upgrade pip")
 
 # install and import a python module
 
