@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.2.6
+# Version:      0.2.7
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -81,12 +81,17 @@ except ImportError:
   install_and_import("lxml")
   import lxml
 
+script_exe  = sys.argv[0]
+script_dir  = os.path.basename(script_exe)
+meshcmd_bin = "%s/meshcmd" % (script_dir)
+
 # Print help
 
-def print_help():
-  script_exe = sys.argv[0]
+def print_help(script_exe):
+  print("")
   command    = "%s -h" % (script_exe)
   os.system(command)
+  print("")
 
 # Read a file into an array
 
@@ -98,7 +103,7 @@ def file_to_array(file_name):
 # If we have no command line arguments print help
 
 if sys.argv[-1] == sys.argv[0]:
-  print_help()
+  print_help(script_exe)
   exit()
 
 # Get command line arguments
@@ -119,6 +124,7 @@ parser.add_argument("--hostname",required=False)            # Set hostname
 parser.add_argument("--domainname",required=False)          # Set dommainname
 parser.add_argument("--primarydns",required=False)          # Set primary DHS
 parser.add_argument("--secondarydns",required=False)        # Set secondary DNS
+parser.add_argument("--meshcmd",required=False)             # Run Meshcmd
 parser.add_argument("--set",action='store_true')            # Set value
 parser.add_argument("--version",action='store_true')        # Display version
 parser.add_argument("--insecure",action='store_true')       # Use HTTP/Telnet
@@ -207,6 +213,14 @@ def verify_password(stored_password, provided_password):
     pwdhash = binascii.hexlify(pwdhash).decode('ascii')
     return pwdhash == stored_password
 
+# Download file
+
+def download_file(link,file):
+  string = "Downloading %s to %s" % (link,file)
+  print(string)
+  urllib.request.urlretrieve(link,file)
+  return
+
 # Get AMT value from web
 
 def get_web_amt_value(avail,model,driver,download):
@@ -242,9 +256,7 @@ def get_web_amt_value(avail,model,driver,download):
           html   = str(html)
           link   = html.split('"')[3]
           file   = os.path.basename(link)
-          string = "Downloading %s to %s" % (link,file)
-          print(string)
-          urllib.request.urlretrieve(link,file)
+          download_file(link,file)
         driver.quit()
         return version
     driver.quit()
@@ -619,6 +631,24 @@ def start_web_driver():
     driver = webdriver.Firefox()
   return driver
 
+# Run meshcmd
+
+def mesh_command(ip,command,meshcmd,meshcmd_bin):
+  if not os.path.exists(meshcmd_bin):
+    meshcmd_url = "http://alt.meshcentral.com/meshagents?meshcmd=6"
+    download_file(meshcmd_url,meshcmd_bin)
+    os.chmod(meshcmd_bin,"0755")
+  if not ip == "":
+    status = check_ping(ip)
+    if not status == False:
+      username = get_username(ip)
+      password = get_password(ip,username)
+      command  = "%s %s --host %s --host %s --user %s --pass %s" % (meshcmd_bin,meshcmd,ip,username,password)
+  else:
+    command  = "%s %s" % (meshcmd_bin,meshcmd)
+  os.system(command)
+  return
+
 # Handle version switch
 
 if option["version"]:
@@ -763,6 +793,11 @@ if option["check"]:
 if option["port"]:
   port = option["port"]
 
+# Handle MeshCmd option
+
+if option["meshcmd"]:
+  meshcmd = option["meshcmd"]
+
 # Handle meshcommander switch
 
 if option["meshcommander"]:
@@ -773,7 +808,7 @@ if option["meshcommander"]:
 if option["meshcentral"]:
   mesh_bin = "meshcentral"
 
-# Hadnle download value
+# Handle download value
 
 if option["download"]:
   download = True
@@ -813,10 +848,13 @@ if option["type"]:
       username = get_username(ip)
       password = get_password(ip,username)
     if oob_type == "amt":
-      if option["sol"]:
-        status = check_ping(ip)
-        if not status == False:
-          sol_to_host(ip,password)
+      if option["sol"] or option["meshcmd"]:
+        if option["sol"]:
+          status = check_ping(ip)
+          if not status == False:
+            sol_to_host(ip,password)
+        else:
+          mesh_command(ip,password,meshcmd,meshcmd_bin)
       else:
         driver = start_web_driver()
       if option["check"]:

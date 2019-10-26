@@ -50,3 +50,5 @@
 # Added code to set primary and secondary DNS for AMT
 # 0.2.6: Sat 26 Oct 2019 16:25:52 AEDT
 # Fixed issue with HTML parsing and added connectivity test
+# 0.2.7: Sun 27 Oct 2019 10:01:20 AEDT
+# Added initial support for MeshCmd
