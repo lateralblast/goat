@@ -70,6 +70,7 @@ An example of installing these on Mac OS:
 ```
 pip install selenium
 pip install bs4
+pip install lxml
 brew install geckodriver
 brew install amtterm
 brew install npm
