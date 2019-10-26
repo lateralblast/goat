@@ -60,6 +60,7 @@ The following tools are required:
 - Python and the following libraries
   - Seleniue
   - BeautifulSoap
+  - lxml
 - geckodriver
 
 The code will try to auto install the Python modules and other tools if they are not available.

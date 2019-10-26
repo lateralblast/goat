@@ -48,3 +48,5 @@
 # Updated set code to deal with more options
 # 0.2.5: Sun  2 Jun 2019 21:21:28 AEST
 # Added code to set primary and secondary DNS for AMT
+# 0.2.6: Sat 26 Oct 2019 16:25:52 AEDT
+# Fixed issue with HTML parsing and added connectivity test

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.2.5
+# Version:      0.2.6
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -16,6 +16,7 @@
 # Import modules
 
 import subprocess
+import platform
 import argparse
 import binascii
 import hashlib
@@ -71,6 +72,14 @@ try:
 except ImportError:
   install_and_import("bs4")
   from bs4 import BeautifulSoup
+
+# Load lxml
+
+try:
+  import lxml
+except ImportError:
+  install_and_import("lxml")
+  import lxml
 
 # Print help
 
@@ -168,6 +177,17 @@ def check_valid_ip(ip):
   else:
     return True
 
+# Check host is up
+
+def check_ping(ip):
+  try:
+    output = subprocess.check_output("ping -{} 1 {}".format('n' if platform.system().lower()=="windows" else 'c', ip), shell=True)
+  except Exception:
+    string = "Host %s not responding" % (ip)
+    print(string)
+    return False
+  return True
+
 # Hash a password for storing
 
 def hash_password(password):
@@ -196,7 +216,7 @@ def get_web_amt_value(avail,model,driver,download):
     full_url = "%s/search?keyword=%s" % (base_url,model)
     driver.get(full_url)
     html_doc  = driver.page_source
-    html_doc  = BeautifulSoup(html_doc,'html.parser')
+    html_doc  = BeautifulSoup(html_doc,features='lxml')
     html_data = html_doc.find_all('td')
     for html_line in html_data:
       html_text = str(html_line)
@@ -217,7 +237,7 @@ def get_web_amt_value(avail,model,driver,download):
           from selenium.webdriver.common.by import By
           driver.get(bios_url)    
           html   = driver.page_source
-          html   = BeautifulSoup(html,'html.parser')
+          html   = BeautifulSoup(html,features='lxml')
           html   = html.findAll("a", text=re.compile(r"\.bio"))[0]
           html   = str(html)
           link   = html.split('"')[3]
@@ -285,7 +305,7 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
     print(string)
   driver.get(full_url)
   html_doc  = driver.page_source
-  html_doc  = BeautifulSoup(html_doc,'html.parser')
+  html_doc  = BeautifulSoup(html_doc,features='lxml')
   html_data = html_doc.find_all('td','maincell')
   if re.search(r"state",get_value):
     html_data = str(html_data).split("<td>")
@@ -794,22 +814,36 @@ if option["type"]:
       password = get_password(ip,username)
     if oob_type == "amt":
       if option["sol"]:
-        sol_to_host(ip,password)
+        status = check_ping(ip)
+        if not status == False:
+          sol_to_host(ip,password)
       else:
         driver = start_web_driver()
       if option["check"]:
-        model    = get_amt_value("model",ip,username,password,driver,http_proto,search)
-        current  = get_amt_value(check,ip,username,password,driver,http_proto,search)
-        avail    = get_web_amt_value(check,model,driver,download)
-        compare_versions(current,avail,oob_type)
+        status = check_ping(ip)
+        if not status == False:
+          model   = get_amt_value("model",ip,username,password,driver,http_proto,search)
+          current = get_amt_value(check,ip,username,password,driver,http_proto,search)
+          avail   = get_web_amt_value(check,model,driver,download)
+          compare_versions(current,avail,oob_type)
       if option["avail"]:
         if not option["model"]:
-          model = get_amt_value("model",ip,username,password,driver,http_proto,search)
-        get_web_amt_value(avail,model,driver,download)
+          status = check_ping(ip)
+          if not status == False:
+            username = get_username(ip)
+            password = get_password(ip,username)
+            model = get_amt_value("model",ip,username,password,driver,http_proto,search)
+            get_web_amt_value(avail,model,driver,download)
+        else:
+          get_web_amt_value(avail,model,driver,download)
       if option["get"]:
-        get_amt_value(get_value,ip,username,password,driver,http_proto,search)
+        status = check_ping(ip)
+        if not status == False:
+          get_amt_value(get_value,ip,username,password,driver,http_proto,search)
       if option["set"]:
-        set_amt_value(ip,username,password,driver,http_proto,hostname,domainname,primarydns,secondarydns,power)
+        status = check_ping(ip)
+        if not status == False:
+          set_amt_value(ip,username,password,driver,http_proto,hostname,domainname,primarydns,secondarydns,power)
 else:
   print("No OOB type specified")
   exit()
