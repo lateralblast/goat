@@ -695,7 +695,7 @@ else:
       if option["meshcmd"]:
         if option["ip"]:
           username = get_username(ip)
-      else
+      else:
         username = get_username(ip)
 
 # Handle password switch
