@@ -656,9 +656,9 @@ def mesh_command(ip,command,meshcmd,meshcmd_bin):
       if not status == False:
         username = get_username(ip)
         password = get_password(ip,username)
-        command  = "%s %s --host %s --host %s --user %s --pass %s" % (meshcmd_bin,meshcmd,ip,username,password)
+        command  = "sudo %s %s --host %s --host %s --user %s --pass %s" % (meshcmd_bin,meshcmd,ip,username,password)
     else:
-      command  = "%s %s" % (meshcmd_bin,meshcmd)
+      command  = "sudo %s %s" % (meshcmd_bin,meshcmd)
   print(command)
   os.system(command)
   return
