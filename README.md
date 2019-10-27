@@ -63,6 +63,8 @@ The following tools are required:
   - lxml
 - geckodriver
 
+You will need both python and python-pip packages
+
 The code will try to auto install the Python modules and other tools if they are not available.
 
 An example of installing these on Mac OS:

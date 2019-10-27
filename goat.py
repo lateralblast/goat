@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
 # Version:      0.2.7
@@ -53,7 +53,8 @@ def install_and_import(package):
   try:
     importlib.import_module(package)
   except ImportError:
-    main(["install", "--user", package])
+    command = "python3 -m pip install --user %s" % (package)
+    os.system(command)
   finally:
     globals()[package] = importlib.import_module(package)
 
@@ -88,10 +89,10 @@ meshcmd_bin = "%s/meshcmd" % (script_dir)
 # Print help
 
 def print_help(script_exe):
-  print("")
+  print("\n")
   command    = "%s -h" % (script_exe)
   os.system(command)
-  print("")
+  print("\n")
 
 # Read a file into an array
 
@@ -691,7 +692,11 @@ else:
       username = get_username(ip)
   else:
     if option["type"] and not option["allhosts"]:
-      username = get_username(ip)
+      if option["meshcmd"]:
+        if option["ip"]:
+          username = get_username(ip)
+      else
+        username = get_username(ip)
 
 # Handle password switch
 
@@ -823,6 +828,11 @@ if option["meshcommander"] or option["meshcentral"]:
   check_mesh_config(mesh_bin)
   start_mesh(mesh_bin,mesh_port)
   exit()
+
+# If option meshcmd is used the type of OOB is AMT
+
+if not option["type"] and option["meshcmd"]:
+  option["type"] = "amt"
 
 # Handle vendor switch
 
