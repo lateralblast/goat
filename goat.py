@@ -644,7 +644,7 @@ def start_web_driver():
 
 def mesh_command(ip,command,meshcmd,meshcmd_bin):
   if not os.path.exists(meshcmd_bin):
-    meshcmd_url = "http://www.google.com/url?q=http%3A%2F%2Falt.meshcentral.com%2Fmeshagents%3Fmeshcmd%3D6&sa=D&sntz=1&usg=AFQjCNFI4tgIOJQ4h8kZJGVPmgeanrr5GQ"
+    meshcmd_url = "https://github.com/lateralblast/goat/blob/master/meshcmd?raw=true"
     download_file(meshcmd_url,meshcmd_bin)
     command = "chmod +x %s" % (meshcmd_bin)
     os.system(command)
