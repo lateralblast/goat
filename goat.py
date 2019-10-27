@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.2.8
+# Version:      0.3.0
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -92,7 +92,8 @@ except ImportError:
 
 script_exe  = sys.argv[0]
 script_dir  = os.path.dirname(script_exe)
-meshcmd_bin = "%s/meshcmd" % (script_dir)
+uname_arch  = subprocess.check_output("uname -m",shell=True)
+meshcmd_bin = "%s/meshcmd.%s" % (script_dir,uname_arch)
 
 # Print help
 

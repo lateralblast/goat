@@ -56,3 +56,5 @@
 # Python pip and other fixes
 # 0.2.9: Sun 27 Oct 12:54:08 AEDT 2019
 # Various bug fixes
+# 0.3.0: Sun 27 Oct 2019 13:24:01 AEDT
+# Added check for architecture for MeshCMD
