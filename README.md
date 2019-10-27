@@ -61,6 +61,7 @@ The following tools are required:
   - Seleniue
   - BeautifulSoap
   - lxml
+  - wget
 - geckodriver
 
 You will need both python and python-pip packages

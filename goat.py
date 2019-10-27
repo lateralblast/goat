@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.2.7
+# Version:      0.2.8
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -15,13 +15,13 @@
 
 # Import modules
 
+import urllib.request
 import subprocess
 import platform
 import argparse
 import binascii
 import hashlib
 import getpass
-import urllib
 import socket
 import time
 import sys
@@ -82,8 +82,16 @@ except ImportError:
   install_and_import("lxml")
   import lxml
 
+# load wget
+
+try:
+  import wget
+except ImportError:
+  install_and_import("wget")
+  import wget
+
 script_exe  = sys.argv[0]
-script_dir  = os.path.basename(script_exe)
+script_dir  = os.path.dirname(script_exe)
 meshcmd_bin = "%s/meshcmd" % (script_dir)
 
 # Print help
@@ -217,9 +225,9 @@ def verify_password(stored_password, provided_password):
 # Download file
 
 def download_file(link,file):
-  string = "Downloading %s to %s" % (link,file)
-  print(string)
-  urllib.request.urlretrieve(link,file)
+  if not os.path.exists(file):
+    string = "Downloading %s to %s" % (link,file)
+    wget.download(link,file)
   return
 
 # Get AMT value from web
@@ -636,17 +644,22 @@ def start_web_driver():
 
 def mesh_command(ip,command,meshcmd,meshcmd_bin):
   if not os.path.exists(meshcmd_bin):
-    meshcmd_url = "http://alt.meshcentral.com/meshagents?meshcmd=6"
+    meshcmd_url = "http://www.google.com/url?q=http%3A%2F%2Falt.meshcentral.com%2Fmeshagents%3Fmeshcmd%3D6&sa=D&sntz=1&usg=AFQjCNFI4tgIOJQ4h8kZJGVPmgeanrr5GQ"
     download_file(meshcmd_url,meshcmd_bin)
-    os.chmod(meshcmd_bin,"0755")
-  if not ip == "":
-    status = check_ping(ip)
-    if not status == False:
-      username = get_username(ip)
-      password = get_password(ip,username)
-      command  = "%s %s --host %s --host %s --user %s --pass %s" % (meshcmd_bin,meshcmd,ip,username,password)
+    command = "chmod +x %s" % (meshcmd_bin)
+    os.system(command)
+  if meshcmd == "help":
+    command = "%s" % (meshcmd_bin)
   else:
-    command  = "%s %s" % (meshcmd_bin,meshcmd)
+    if re.search(r"[0-9]",ip):
+      status = check_ping(ip)
+      if not status == False:
+        username = get_username(ip)
+        password = get_password(ip,username)
+        command  = "%s %s --host %s --host %s --user %s --pass %s" % (meshcmd_bin,meshcmd,ip,username,password)
+    else:
+      command  = "%s %s" % (meshcmd_bin,meshcmd)
+  print(command)
   os.system(command)
   return
 
@@ -831,7 +844,7 @@ if option["meshcommander"] or option["meshcentral"]:
 
 # If option meshcmd is used the type of OOB is AMT
 
-if not option["type"] and option["meshcmd"]:
+if option["meshcmd"]:
   option["type"] = "amt"
 
 # Handle vendor switch
@@ -852,7 +865,13 @@ if option["type"]:
         driver = start_web_driver()
         get_web_amt_value(avail,model,driver,download)
     else:
-      ips.append(ip)
+      if option["ip"]:
+        ips.append(ip)
+      else:
+        if option["meshcmd"]:
+          ips.append("")
+          password = ""
+          username = ""
   for ip in ips:
     if option["allhosts"]:
       username = get_username(ip)
