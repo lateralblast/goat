@@ -58,3 +58,5 @@
 # Various bug fixes
 # 0.3.0: Sun 27 Oct 2019 13:24:01 AEDT
 # Added check for architecture for MeshCMD
+# 0.3.1: Wednesday 30 October  19:46:40 AEDT 2019
+# Added initial iDRAC support

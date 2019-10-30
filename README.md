@@ -10,7 +10,7 @@ Introduction
 
 This tools is designed to consolidate several tools into one generic tool.
 
-At the moment it supports get/set for Intel's AMT.
+At the moment it supports get/set for Intel's AMT, and some iDRAC functions.
 
 Some features:
 
@@ -62,18 +62,31 @@ The following tools are required:
   - BeautifulSoap
   - lxml
   - wget
+  - paramiko
 - geckodriver
 
-You will need both python and python-pip packages
+You will need both python and python-pip packages. 
+As older versions of Python are deprecated I've had issues installing the requied modules with versions of Python less than 3.
 
-The code will try to auto install the Python modules and other tools if they are not available.
+I'd recommend using pyenv, but for example to install the required Python components on Ubuntu:
 
-An example of installing these on Mac OS:
+```
+sudo apt-get install python3-setuptools python3-pip python3-dev build-essential
+```
+
+The code will try to auto install the Python modules and other tools if they are not available, but to install them manually:
 
 ```
 pip install selenium
 pip install bs4
 pip install lxml
+pip install wget
+pip install paramiko
+```
+
+An example of installing the other required tools on Mac OS:
+
+```
 brew install geckodriver
 brew install amtterm
 brew install npm
@@ -81,6 +94,20 @@ mkdir meshcommander
 cd meshcommander
 npm install meshcommander
 ```
+
+An example of installing the other required tools on Ubuntu:
+
+```
+sudo apt-get install amtterm
+sudo apt-get install npm
+cd /tmp
+wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz
+sudo sh -c 'tar -x geckodriver -zf geckodriver-v0.26.0-linux64.tar.gz -O > /usr/bin/geckodriver'
+sudo chmod +x /usr/bin/geckodriver
+rm geckodriver-v0.26.0-linux64.tar.gz
+```
+
+
 License
 -------
 
@@ -118,7 +145,7 @@ the IO port which can be determined with the following command:
 dmesg | grep ttySX | grep irq | tr -s " " | cut -d" " -f7
 ```
 
-Once you have the serial TTY number and the IO port you can configure grub:
+Once you have the serial TTY number and the IO port you can configure grub, for example:
 
 ```
 echo 'GRUB_CMDLINE_LINUX="console=ttySX,115200"' >> /etc/default/grub
@@ -126,7 +153,6 @@ echo 'GRUB_TERMINAL="serial console"' >> /etc/default/grub
 echo 'GRUB_SERIAL_COMMAND="serial --speed=115200 --port=0xXXXX"' >> /etc/default/grub
 update-grub
 ```
-
 
 Examples
 --------
@@ -353,4 +379,11 @@ Event Log,Event,Time,Source,Description
 5,5/28/2019,9:59 pm,BIOS,Performing PCI configuration.
 6,5/28/2019,9:59 pm,BIOS,Performing PCI configuration.
 7,5/28/2019,9:59 pm,BIOS,Performing PCI configuration.
+```
+
+Get iDRAC BIOS version:
+
+```
+./goat.py --type idrac --get bios --ip 192.168.10.211
+Bios Version             = 6.6.0
 ```

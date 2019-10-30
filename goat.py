@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.3.0
+# Version:      0.3.1
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -89,6 +89,14 @@ try:
 except ImportError:
   install_and_import("wget")
   import wget
+
+# load paraminko
+
+try:
+  import paramiko
+except ImportError:
+  install_and_import("paramiko")
+  import paramiko
 
 script_exe  = sys.argv[0]
 script_dir  = os.path.dirname(script_exe)
@@ -645,7 +653,7 @@ def start_web_driver():
 
 def mesh_command(ip,command,meshcmd,meshcmd_bin):
   if not os.path.exists(meshcmd_bin):
-    meshcmd_url = "https://github.com/lateralblast/goat/blob/master/meshcmd?raw=true"
+    meshcmd_url = "https://github.com/lateralblast/goat/blob/master/%s?raw=true" % (meshcmd_bin)
     download_file(meshcmd_url,meshcmd_bin)
     command = "chmod +x %s" % (meshcmd_bin)
     os.system(command)
@@ -663,6 +671,34 @@ def mesh_command(ip,command,meshcmd,meshcmd_bin):
   print(command)
   os.system(command)
   return
+
+# Get iDRAC value
+
+def get_idrac_value(get_value,ip,username,password):
+  ssh = paramiko.SSHClient()
+  ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+  ssh.connect(ip, username=username, password=password)
+  if re.search(r"bios|idrac|usc",get_value):
+    command = "racadm getversion"
+    stdin,stdout,stderr = ssh.exec_command(command)
+    for line in stdout.readlines():
+      line = line.strip()
+      if re.search(r"bios",get_value) and re.search(r"^Bios",line):
+        print(line)
+      if re.search(r"idrac",get_value) and re.search(r"^iDRAC",line):
+        print(line)
+      if re.search(r"usc",get_value) and re.search(r"^USC",line):
+        print(line)
+  ssh.close()
+
+# Handle type
+
+if option["type"]:
+  oob_type = option["type"]
+  if oob_type == "amt":
+    default_user = "admin"
+  if oob_type == "idrac":
+    default_user = "root"
 
 # Handle version switch
 
@@ -877,6 +913,11 @@ if option["type"]:
     if option["allhosts"]:
       username = get_username(ip)
       password = get_password(ip,username)
+    if oob_type == "idrac":
+      if option["get"]:
+        status = check_ping(ip)
+        if not status == False:
+          bios = get_idrac_value(get_value,ip,username,password)
     if oob_type == "amt":
       if option["sol"] or option["meshcmd"]:
         if option["sol"]:
