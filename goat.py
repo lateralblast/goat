@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.3.1
+# Version:      0.3.2
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -471,9 +471,9 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
       string = "Setting Domainname to %s" % (domainname)
       print(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
-  if re.search(r"[a-z]",primarydns) or (r"[a-z]",secondarydns):
+  if re.search(r"[a-z,0-9]",primarydns) or (r"[a-z,0-9]",secondarydns):
     full_url = "%s/ip.htm" % (base_url)
-    if re.search(r"[a-z]",primarydns):
+    if re.search(r"[a-z,0-9]",primarydns):
       search = "DNSServer"
       driver.get(full_url)
       from selenium.webdriver.common.by import By
@@ -483,7 +483,7 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
       string = "Setting Primary DNS to %s" % (primarydns)
       print(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
-    if re.search(r"[a-z]",secondarydns):
+    if re.search(r"[a-z,0-9]",secondarydns):
       search = "AlternativeDns"
       driver.get(full_url)
       from selenium.webdriver.common.by import By
@@ -674,27 +674,38 @@ def mesh_command(ip,command,meshcmd,meshcmd_bin):
 
 # Get iDRAC value
 
+def set_idrac_value(get_value,ip,username,password):
+  ssh = paramiko.SSHClient()
+  ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+  ssh.connect(ip, username=username, password=password)
+  stdin,stdout,stderr = ssh.exec_command(command)
+  ssh.close()
+  return
+
+# Get iDRAC value
+
 def get_idrac_value(get_value,ip,username,password):
   ssh = paramiko.SSHClient()
   ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
   ssh.connect(ip, username=username, password=password)
-  if re.search(r"bios|idrac|usc",get_value):
+  if re.search(r"bios|idrac|usc",get_value.lower()):
     command = "racadm getversion"
-    stdin,stdout,stderr = ssh.exec_command(command)
-    for line in stdout.readlines():
-      line = line.strip()
-      if re.search(r"bios",get_value) and re.search(r"^Bios",line):
-        print(line)
-      if re.search(r"idrac",get_value) and re.search(r"^iDRAC",line):
-        print(line)
-      if re.search(r"usc",get_value) and re.search(r"^USC",line):
-        print(line)
+  else:
+    command = "racadm getsysinfo"
+  stdin,stdout,stderr = ssh.exec_command(command)
+  for line in stdout.readlines():
+    line  = line.strip()
+    regex = r'\b(?=\w){0}\b(?!\w)'.format(get_value)
+    if re.search(get_value,line,re.IGNORECASE):
+     print(line)
   ssh.close()
+  return
 
 # Handle type
 
 if option["type"]:
   oob_type = option["type"]
+  oob_type = oob_type.lower()
   if oob_type == "amt":
     default_user = "admin"
   if oob_type == "idrac":

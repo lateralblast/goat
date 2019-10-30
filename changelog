@@ -60,3 +60,5 @@
 # Added check for architecture for MeshCMD
 # 0.3.1: Wednesday 30 October  19:46:40 AEDT 2019
 # Added initial iDRAC support
+# 0.3.2: Thursday 31 October  10:50:50 AEDT 2019
+# Improved search capability for get commands against iDRAC
