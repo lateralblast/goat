@@ -164,11 +164,14 @@ Getting help:
 usage: goat.py [-h] [--ip IP] [--username USERNAME] [--type TYPE] [--get GET]
                [--password PASSWORD] [--search SEARCH] [--avail AVAIL]
                [--check CHECK] [--model MODEL] [--port PORT] [--power POWER]
-               [--hostname HOSTNAME] [--domainname DOMAINNAME]
-               [--primarydns PRIMARYDNS] [--secondarydns SECONDARYDNS] [--set]
-               [--version] [--insecure] [--verbose] [--debug] [--mask]
-               [--meshcommander] [--meshcentral] [--options] [--allhosts]
-               [--sol] [--download]
+               [--hostname HOSTNAME] [--gateway GATEWAY] [--netmask NETMASK]
+               [--domainname DOMAINNAME] [--primarydns PRIMARYDNS]
+               [--secondarydns SECONDARYDNS] [--primarysyslog PRIMARYSYSLOG]
+               [--secondarysyslog SECONDARYSYSLOG] [--syslogport SYSLOGPORT]
+               [--primaryntp PRIMARYNTP] [--secondaryntp SECONDARYNTP]
+               [--meshcmd MESHCMD] [--set] [--version] [--insecure]
+               [--verbose] [--debug] [--mask] [--meshcommander]
+               [--meshcentral] [--options] [--allhosts] [--sol] [--download]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -184,9 +187,17 @@ optional arguments:
   --port PORT
   --power POWER
   --hostname HOSTNAME
+  --gateway GATEWAY
+  --netmask NETMASK
   --domainname DOMAINNAME
   --primarydns PRIMARYDNS
   --secondarydns SECONDARYDNS
+  --primarysyslog PRIMARYSYSLOG
+  --secondarysyslog SECONDARYSYSLOG
+  --syslogport SYSLOGPORT
+  --primaryntp PRIMARYNTP
+  --secondaryntp SECONDARYNTP
+  --meshcmd MESHCMD
   --set
   --version
   --insecure
@@ -204,38 +215,47 @@ optional arguments:
 Getting information about options:
 
 ```
-./goat.py --options
-
 Options:
 
---ip              Specify IP of OOB/Remote Management interface
---username        Set Username
---type            Set Type
---get             Get Parameter
---password        Set Password
---search          Search output for value
---avail           Get available version from vendor (e.g. BIOS)
---check           Check current version against available version from vendor (e.g. BIOS)
---model           Specify model (can be used with --avail)
---port            Specify port to run service on
---power           Set power state (on, off, reset)
---hostname        Set hostname
---domainname      Set dommainname
---primarydns      Set primary DHS
---secondarydns    Set secondary DNS
---set             Set value
---version         Display version
---insecure        Use HTTP/Telnet
---verbose         Enable verbose output
---debug           Enable debug output
---mask            Mask serial and hostname output output
---meshcommander   Use Meshcommander
---meshcentral     Use Meshcentral
---options         Display options information
---allhosts        Automate via .goatpass
---sol             Start a SOL connection to host
---download        Download BIOSn
+--ip			          Specify IP of OOB/Remote Management interface
+--username      		Set Username
+--type	  	      	Set Type
+--get		           	Get Parameter
+--password       		Set Password
+--search         		Search output for value
+--avail	         		Get available version from vendor (e.g. BIOS)
+--check	         		Check current version against available version from vendor (e.g. BIOS)
+--model	         		Specify model (can be used with --avail)
+--port		         	Specify port to run service on
+--power	         		Set power state (on, off, reset)
+--hostname       		Set hostname
+--gateway	         	Set gateway
+--netmask	         	Set netmask
+--domainname     		Set dommainname
+--primarydns	    	Set primary DNS
+--secondarydns	  	Set secondary DNS
+--primarysyslog 		Set primary Syslog
+--secondarysyslog 	Set secondary Syslog
+--syslogport    		Set Syslog port
+--primaryntp    		Set primary NTP
+--secondaryntp  		Set secondary NTP
+--meshcmd        		Run Meshcmd
+--set	           		Set value
+--version        		Display version
+--insecure       		Use HTTP/Telnet
+--verbose	         	Enable verbose output
+--debug		        	Enable debug output
+--mask	      		  Mask serial and hostname output output
+--meshcommander 		Use Meshcommander
+--meshcentral    		Use Meshcentral
+--options	         	Display options information
+--allhosts      		Automate via .goatpass
+--sol		          	Start a SOL connection to host
+--download	      	Download BIOS
 ```
+
+Intel AMT Examples
+------------------
 
 Connecting to host over SOL:
 
@@ -381,9 +401,35 @@ Event Log,Event,Time,Source,Description
 7,5/28/2019,9:59 pm,BIOS,Performing PCI configuration.
 ```
 
-Get iDRAC BIOS version:
+iDRAC Examples
+--------------
+
+Get BIOS version:
 
 ```
 ./goat.py --type idrac --get bios --ip 192.168.10.211
 Bios Version             = 6.6.0
 ```
+
+Get iDRAC version:
+
+```
+./goat.py --type idrac --get idrac --ip 192.168.10.211
+iDRAC Version            = 2.92
+```
+
+Get DNS information:
+
+```
+./goat.py --type idrac --get dns --ip 192.168.10.211
+Register DNS RAC Name   = 1
+DNS RAC Name            = hostname
+Current DNS Domain      = blah.com
+Current DNS Server 1    = 8.8.8.8
+Current DNS Server 2    = 8.8.4.4
+DNS Servers from DHCP   = 0
+DNS Servers from DHCPv6 = 0
+Current DNS Server 1    = ::
+Current DNS Server 2    = ::
+```
+

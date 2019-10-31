@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.3.2
+# Version:      0.3.3
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -139,9 +139,16 @@ parser.add_argument("--model",required=False)               # Specify model (can
 parser.add_argument("--port",required=False)                # Specify port to run service on
 parser.add_argument("--power",required=False)               # Set power state (on, off, reset)
 parser.add_argument("--hostname",required=False)            # Set hostname
+parser.add_argument("--gateway",required=False)             # Set gateway
+parser.add_argument("--netmask",required=False)             # Set netmask
 parser.add_argument("--domainname",required=False)          # Set dommainname
-parser.add_argument("--primarydns",required=False)          # Set primary DHS
+parser.add_argument("--primarydns",required=False)          # Set primary DNS
 parser.add_argument("--secondarydns",required=False)        # Set secondary DNS
+parser.add_argument("--primarysyslog",required=False)       # Set primary Syslog
+parser.add_argument("--secondarysyslog",required=False)     # Set secondary Syslog
+parser.add_argument("--syslogport",required=False)          # Set Syslog port
+parser.add_argument("--primaryntp",required=False)          # Set primary NTP
+parser.add_argument("--secondaryntp",required=False)        # Set secondary NTP 
 parser.add_argument("--meshcmd",required=False)             # Run Meshcmd
 parser.add_argument("--set",action='store_true')            # Set value
 parser.add_argument("--version",action='store_true')        # Display version
@@ -178,9 +185,12 @@ def print_options(script_exe):
       option = line.split('"')[1]
       info   = line.split("# ")[1]
       if len(option) < 8:
-        string = "%s\t\t%s" % (option,info)
+        string = "%s\t\t\t%s" % (option,info)
       else:
-        string = "%s\t%s" % (option,info)
+        if len(option) < 16:
+          string = "%s\t\t%s" % (option,info)
+        else:
+          string = "%s\t%s" % (option,info)
       print(string)
   print("\n")
 
@@ -674,11 +684,59 @@ def mesh_command(ip,command,meshcmd,meshcmd_bin):
 
 # Get iDRAC value
 
-def set_idrac_value(get_value,ip,username,password):
+def set_idrac_value(ip,username,password,hostname,domainname,netmask,gateway,primarydns,secondarydns,primaryntp,secondaryntp,primarysyslog,secondarysyslog,syslogport,power):
   ssh = paramiko.SSHClient()
   ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
   ssh.connect(ip, username=username, password=password)
-  stdin,stdout,stderr = ssh.exec_command(command)
+  commands = []
+  if re.search(r"[a-z,0-9]",domainname):
+    command = "racadm config -g cfgLanNetworking -o cfgDNSDomainNameFromDHCP 0"
+    commands.append(command)
+    command = "racadm config -g cfgLanNetworking -o cfgDNSDomainName %s" % (domainname)
+    commands.append(command)
+  if re.search(r"[0-9]",netmask):
+    command = "racadm config -g cfgLanNetworking -o cfgNicNetmask %s" % (netmask)
+    commands.append(command)
+  if re.search(r"[0-9]",gateway):
+    command = "racadm config -g cfgLanNetworking -o cfgNicNetmask %s" % (gateway)
+    commands.append(command)
+  if re.search(r"[0-9]",primarydns):
+    command = "racadm config -g cfgLanNetworking -o cfgDNSServersFromDHCP 0"
+    commands.append(command)
+    command = "racadm config -g cfgLanNetworking -o cfgDNSServer1 %s" % (primarydns)
+    commands.append(command)
+  if re.search(r"[0-9]",secondarydns):
+    command = "racadm config -g cfgLanNetworking -o cfgDNSServersFromDHCP 0"
+    commands.append(command)
+    command = "racadm config -g cfgLanNetworking -o cfgDNSServer2 %s" % (secondarydns)
+    commands.append(command)
+  if re.search(r"[a-z,0-9]",primaryntp):
+    command = "racadm config -g cfgLanNetworking -o cfgRhostsNtpEnable 1"
+    commands.append(command)
+    command = "racadm config -g cfgLanNetworking -o cfgRhostsNtpServer1 %s" % (primaryntp)
+    commands.append(command)
+  if re.search(r"[a-z,0-9]",secondaryntp):
+    command = "racadm config -g cfgLanNetworking -o cfgRhostsNtpEnable 1"
+    commands.append(command)
+    command = "racadm config -g cfgLanNetworking -o cfgRhostsNtpServer2 %s" % (secondaryntp)
+    commands.append(command)
+  if re.search(r"[a-z,0-9]",primarysyslog):
+    command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogEnable 1"
+    commands.append(command)
+    command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogServer1 %s" % (primarysyslog)
+    commands.append(command)
+  if re.search(r"[a-z,0-9]",secondarysyslog):
+    command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogEnable 1"
+    commands.append(command)
+    command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogServer2 %s" % (secondarysyslog)
+    commands.append(command)
+  if re.search(r"[0-9]",syslogport):
+    command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogEnable 1"
+    commands.append(command)
+    command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogPort%s" % (syslogport)
+    commands.append(command)
+  for command in commands:
+    stdin,stdout,stderr = ssh.exec_command(command)
   ssh.close()
   return
 
@@ -830,6 +888,20 @@ if option["hostname"]:
 else:
   hostname = ""    
 
+# Handle gateway switch
+
+if option["gateway"]:
+  gateway = option["gateway"]
+else:
+  gateway = ""    
+
+# Handle netmask switch
+
+if option["netmask"]:
+  netmask = option["netmask"]
+else:
+  netmask = ""   
+
 # Handle primarydns switch
 
 if option["primarydns"]:
@@ -837,12 +909,47 @@ if option["primarydns"]:
 else:
   primarydns = "" 
 
+# Handle primaryntp switch
+
+if option["primaryntp"]:
+  primaryntp = option["primaryntp"]
+else:
+  primaryntp = "" 
+
+# Handle primarysyslog switch
+
+if option["primarysyslog"]:
+  primarysyslog = option["primarysyslog"]
+else:
+  primarysyslog = "" 
+
+# Handle secondaryntp switch
+
+if option["secondaryntp"]:
+  secondaryntp = option["secondaryntp"]
+else:
+  secondaryntp = "" 
+
 # Handle secondarydns switch
 
 if option["secondarydns"]:
   secondarydns = option["secondarydns"]
 else:
   secondarydns = "" 
+
+# Handle secondarysyslog switch
+
+if option["secondarysyslog"]:
+  secondarysyslog = option["secondarysyslog"]
+else:
+  secondarysyslog = "" 
+
+# Handle syslogport switch
+
+if option["syslogport"]:
+  syslogport = option["syslogport"]
+else:
+  syslogport = ""
 
 # Handle avail switch
 
@@ -929,6 +1036,10 @@ if option["type"]:
         status = check_ping(ip)
         if not status == False:
           bios = get_idrac_value(get_value,ip,username,password)
+      if option["set"]:
+        status = check_ping(ip)
+        if not status == False:
+          set_idrac_value(ip,username,password,hostname,domainname,netmask,gateway,primarydns,secondarydns,primaryntp,secondaryntp,primarysyslog,secondarysyslog,syslogport,power)
     if oob_type == "amt":
       if option["sol"] or option["meshcmd"]:
         if option["sol"]:
