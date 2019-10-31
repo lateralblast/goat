@@ -174,7 +174,7 @@ usage: goat.py [-h] [--ip IP] [--username USERNAME] [--type TYPE] [--get GET]
                [--meshcentral] [--options] [--allhosts] [--sol] [--download]
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help show this help message and exit
   --ip IP
   --username USERNAME
   --type TYPE
@@ -217,41 +217,41 @@ Getting information about options:
 ```
 Options:
 
---ip			          Specify IP of OOB/Remote Management interface
---username      		Set Username
---type	  	      	Set Type
---get		           	Get Parameter
---password       		Set Password
---search         		Search output for value
---avail	         		Get available version from vendor (e.g. BIOS)
---check	         		Check current version against available version from vendor (e.g. BIOS)
---model	         		Specify model (can be used with --avail)
---port		         	Specify port to run service on
---power	         		Set power state (on, off, reset)
---hostname       		Set hostname
---gateway	         	Set gateway
---netmask	         	Set netmask
---domainname     		Set dommainname
---primarydns	    	Set primary DNS
---secondarydns	  	Set secondary DNS
---primarysyslog 		Set primary Syslog
---secondarysyslog 	Set secondary Syslog
---syslogport    		Set Syslog port
---primaryntp    		Set primary NTP
---secondaryntp  		Set secondary NTP
---meshcmd        		Run Meshcmd
---set	           		Set value
---version        		Display version
---insecure       		Use HTTP/Telnet
---verbose	         	Enable verbose output
---debug		        	Enable debug output
---mask	      		  Mask serial and hostname output output
---meshcommander 		Use Meshcommander
---meshcentral    		Use Meshcentral
---options	         	Display options information
---allhosts      		Automate via .goatpass
---sol		          	Start a SOL connection to host
---download	      	Download BIOS
+--ip .              Specify IP of OOB/Remote Management interface
+--username          Set Username
+--type              Set Type
+--get               Get Parameter
+--password          Set Password
+--search            Search output for value
+--avail             Get available version from vendor (e.g. BIOS)
+--check             Check current version against available version from vendor (e.g. BIOS)
+--model             Specify model (can be used with --avail)
+--port              Specify port to run service on
+--power             Set power state (on, off, reset)
+--hostname          Set hostname
+--gateway           Set gateway
+--netmask           Set netmask
+--domainname        Set dommainname
+--primarydns        Set primary DNS
+--secondarydns      Set secondary DNS
+--primarysyslog     Set primary Syslog
+--secondarysyslog   Set secondary Syslog
+--syslogport        Set Syslog port
+--primaryntp        Set primary NTP
+--secondaryntp      Set secondary NTP
+--meshcmd           Run Meshcmd
+--set               Set value
+--version           Display version
+--insecure          Use HTTP/Telnet
+--verbose           Enable verbose output
+--debug             Enable debug output
+--mask              Mask serial and hostname output output
+--meshcommander     Use Meshcommander
+--meshcentral       Use Meshcentral
+--options           Display options information
+--allhosts          Automate via .goatpass
+--sol               Start a SOL connection to host
+--download          Download BIOS
 ```
 
 Intel AMT Examples
