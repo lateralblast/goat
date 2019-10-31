@@ -217,7 +217,7 @@ Getting information about options:
 ```
 Options:
 
---ip .              Specify IP of OOB/Remote Management interface
+--ip                Specify IP of OOB/Remote Management interface
 --username          Set Username
 --type              Set Type
 --get               Get Parameter
