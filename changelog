@@ -62,3 +62,7 @@
 # Added initial iDRAC support
 # 0.3.2: Thursday 31 October  10:50:50 AEDT 2019
 # Improved search capability for get commands against iDRAC
+# 0.3.3: Thu 31 Oct 2019 23:00:35 AEDT
+# Added iDRAC set capability
+# 0.3.4: Thu 21 Nov 2019 12:31:45 AEDT
+# Added iDRAC power on/off capability

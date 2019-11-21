@@ -433,3 +433,8 @@ Current DNS Server 1    = ::
 Current DNS Server 2    = ::
 ```
 
+Power on server:
+
+```
+./goat.py --set --power on --type idrac --ip 192.168.10.213 --user root --password XXXXXXXX 
+```

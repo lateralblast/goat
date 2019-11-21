@@ -217,8 +217,8 @@ def check_ping(ip):
   try:
     output = subprocess.check_output("ping -{} 1 {}".format('n' if platform.system().lower()=="windows" else 'c', ip), shell=True)
   except Exception:
-    string = "Host %s not responding" % (ip)
-    print(string)
+    string = "Warning:\tHost %s not responding" % (ip)
+    handle_output(string)
     return False
   return True
 
@@ -263,7 +263,7 @@ def get_web_amt_value(avail,model,driver,download):
     for html_line in html_data:
       html_text = str(html_line)
       if debug_mode == True:
-        print(html_text)
+        handle_output(html_text)
       if re.search("BIOS Update",html_text):
         link_stub = BeautifulSoup(html_text,features='lxml').a.get("href")
         bios_url  = "%s/%s" % (base_url,link_stub)
@@ -272,9 +272,9 @@ def get_web_amt_value(avail,model,driver,download):
         version = BeautifulSoup(html_text,features='lxml').get_text()
         version = re.sub("Latest","",version)
         string  = "Available version:  %s" % (version)
-        print(string)
+        handle_output(string)
         string  = "BIOS Download link: %s" % (bios_url)
-        print(string)
+        handle_output(string)
         if download == True:
           from selenium.webdriver.common.by import By
           driver.get(bios_url)    
@@ -341,8 +341,8 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
     full_url  = "%s/hw-proc.htm" % (base_url)
     get_value = re.sub("cpu","version",get_value)
   if verbose_mode == True:
-    string = "Connecting to: %s" % (full_url)
-    print(string)
+    string = "Information:\tConnecting to: %s" % (full_url)
+    handle_output(string)
   driver.get(full_url)
   html_doc  = driver.page_source
   html_doc  = BeautifulSoup(html_doc,features='lxml')
@@ -365,7 +365,7 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
     for html_line in html_data:
       html_text  = str(html_line)
       if debug_mode == True:
-        print(html_text)
+        handle_output(html_text)
       if not re.search(r"hidden|onclick|colspan",html_text):
         html_text  = re.sub(r"^\<\/td\>","",html_text)
         html_text  = re.sub(r"\<br\/\>",",",html_text)
@@ -426,7 +426,7 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
     found = False
     for result in results:
       if debug_mode == True:
-        print(result)
+        handle_output(result)
       if re.search(r"[a-z]",sub_value):
         if re.search(sub_value,result.lower()):
           found = True
@@ -468,8 +468,8 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
       field = driver.find_element_by_name(search)
       field.clear()
       field.send_keys(hostname)
-      string = "Setting Hostname to %s" % (hostname)
-      print(string)
+      string = "Information:\tSetting Hostname to %s" % (hostname)
+      handle_output(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
     if re.search(r"[a-z]",domainname):
       search = "DomainName"
@@ -478,8 +478,8 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
       field = driver.find_element_by_name(search)
       field.clear()
       field.send_keys(domainname)
-      string = "Setting Domainname to %s" % (domainname)
-      print(string)
+      string = "Information:\tSetting Domainname to %s" % (domainname)
+      handle_output(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
   if re.search(r"[a-z,0-9]",primarydns) or (r"[a-z,0-9]",secondarydns):
     full_url = "%s/ip.htm" % (base_url)
@@ -490,8 +490,8 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
       field = driver.find_element_by_name(search)
       field.clear()
       field.send_keys(primarydns)
-      string = "Setting Primary DNS to %s" % (primarydns)
-      print(string)
+      string = "Information:\tSetting Primary DNS to %s" % (primarydns)
+      handle_output(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
     if re.search(r"[a-z,0-9]",secondarydns):
       search = "AlternativeDns"
@@ -500,8 +500,8 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
       field = driver.find_element_by_name(search)
       field.clear()
       field.send_keys(secondarydns)
-      string = "Setting Secondary DNS to %s" % (secondarydns)
-      print(string)
+      string = "Information:\tSetting Secondary DNS to %s" % (secondarydns)
+      handle_output(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
   if re.search(r"[a-z]",power):
     full_url = "%s/remote.htm" % (base_url)
@@ -518,8 +518,8 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
     object = driver.switch_to.alert
     time.sleep(2)
     object.accept()
-    string = "Sending power %s to %s (Intel AMT has a 30s pause before operation is done)" % (power,ip)
-    print(string)
+    string = "Information:\tSending power %s to %s (Intel AMT has a 30s pause before operation is done)" % (power,ip)
+    handle_output(string)
   driver.quit()
   return
 
@@ -530,19 +530,22 @@ def compare_versions(bios,avail,oob_type):
     if re.search(".",bios):
       current = bios.split(".")[2]
     if avail > current:
-      print("Newer version of BIOS available")
+      handle_output("Information:\tNewer version of BIOS available")
     if avail == current:
-      print("Latest version of BIOS installed")
+      handle_output("Information:\tLatest version of BIOS installed")
   return
 
 # Get console output
 
 def get_console_output(command):
   if verbose_mode:
-    string = "Executing: "+command
-    print(string)
+    string = "Executing:\t%s" % (command)
+    handle_output(string)
   process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, )
   output  = process.communicate()[0].decode()
+  if verbose_mode:
+    string = "Output:\t\t%s" % (output)
+    handle_output(string)
   return output
 
 # Check local config
@@ -573,20 +576,20 @@ def check_mesh_config(mesh_bin):
       command = "cd %s ; npm install %s" % (mesh_dir,mesh_bin)
       output  = get_console_output(command)
       if verbose_mode == True:
-        print(output)
+        handle_output(output)
   return
 
 # Start MeshCommander
 
 def start_mesh(mesh_bin,mesh_port):
   node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
-  print(node_dir)
+  handle_output(node_dir)
   if os.path.exists(node_dir):
     command = "cd %s ; node %s --port %s" % (node_dir,mesh_bin,mesh_port)
     os.system(command)
   else:
     string = "%s not installed" % (mesh_bin)
-    print(string)
+    handle_output(string)
   return
 
 def get_ips():
@@ -678,7 +681,7 @@ def mesh_command(ip,command,meshcmd,meshcmd_bin):
         command  = "sudo %s %s --host %s --host %s --user %s --pass %s" % (meshcmd_bin,meshcmd,ip,username,password)
     else:
       command  = "sudo %s %s" % (meshcmd_bin,meshcmd)
-  print(command)
+  handle_output(command)
   os.system(command)
   return
 
@@ -735,8 +738,21 @@ def set_idrac_value(ip,username,password,hostname,domainname,netmask,gateway,pri
     commands.append(command)
     command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogPort%s" % (syslogport)
     commands.append(command)
+  if re.search(r"[a-z]",power):
+    power = re.sub(r"on","up",power)
+    power = re.sub(r"off","down",power)
+    if not re.search(r"^power",power):
+      power = "power%s" % (power)
+    command = "racadm serveraction %s" % (power)
+    commands.append(command)
   for command in commands:
     stdin,stdout,stderr = ssh.exec_command(command)
+    if verbose_mode == True:
+      output = "Executing:\t%s" % (command)
+      handle_output(output)
+      output = stdout.read().decode('utf-8')
+      output = "Output:\t\t%s" % (output)
+      handle_output(output)
   ssh.close()
   return
 
@@ -755,7 +771,7 @@ def get_idrac_value(get_value,ip,username,password):
     line  = line.strip()
     regex = r'\b(?=\w){0}\b(?!\w)'.format(get_value)
     if re.search(get_value,line,re.IGNORECASE):
-     print(line)
+     handle_output(line)
   ssh.close()
   return
 
@@ -783,8 +799,8 @@ if option["ip"]:
   ip     = option["ip"]
   test   = check_valid_ip(ip)
   if test == False:
-    string = "Invalid IP: %s" % (ip)
-    print(string)
+    string = "Warning:\tInvalid IP: %s" % (ip)
+    handle_output(string)
     exit()
 
 # Handle options switch
@@ -1014,7 +1030,7 @@ if option["type"]:
   else:
     if option["avail"] and not option["ip"]:
       if not option["model"]:
-        print("Not model specified")
+        handle_output("Warning:\tNo model specified")
         exit()
       else:
         driver = start_web_driver()
@@ -1076,6 +1092,6 @@ if option["type"]:
         if not status == False:
           set_amt_value(ip,username,password,driver,http_proto,hostname,domainname,primarydns,secondarydns,power)
 else:
-  print("No OOB type specified")
+  handle_output("Warning:\tNo OOB type specified")
   exit()
   
