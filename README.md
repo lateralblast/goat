@@ -90,6 +90,7 @@ An example of installing the other required tools on Mac OS:
 brew install geckodriver
 brew install amtterm
 brew install npm
+brew install ipmitool
 mkdir meshcommander
 cd meshcommander
 npm install meshcommander
@@ -100,6 +101,7 @@ An example of installing the other required tools on Ubuntu:
 ```
 sudo apt-get install amtterm
 sudo apt-get install npm
+sudo apt-get install ipmitool 
 cd /tmp
 wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz
 sudo sh -c 'tar -x geckodriver -zf geckodriver-v0.26.0-linux64.tar.gz -O > /usr/bin/geckodriver'

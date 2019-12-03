@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.3.3
+# Version:      0.3.6
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -151,6 +151,7 @@ parser.add_argument("--primaryntp",required=False)          # Set primary NTP
 parser.add_argument("--secondaryntp",required=False)        # Set secondary NTP 
 parser.add_argument("--meshcmd",required=False)             # Run Meshcmd
 parser.add_argument("--set",action='store_true')            # Set value
+parser.add_argument("--kill",action='store_true')           # Stop existing session
 parser.add_argument("--version",action='store_true')        # Display version
 parser.add_argument("--insecure",action='store_true')       # Use HTTP/Telnet
 parser.add_argument("--verbose",action='store_true')        # Enable verbose output
@@ -551,7 +552,7 @@ def get_console_output(command):
 # Check local config
 
 def check_local_config():
-  pkg_list = [ "geckodriver", "amtterm", "npm" ]
+  pkg_list = [ "geckodriver", "amtterm", "npm", "ipmitool" ]
   pkg_dir  = "/usr/local/bin"
   brew_bin = "%s/brew" % (pkg_dir)
   output = get_console_output("uname -a")
@@ -566,13 +567,15 @@ def check_local_config():
 # Check mesh config
 
 def check_mesh_config(mesh_bin):
-  mesh_dir = "./%s" % (mesh_bin)
-  node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
-  if not os.path.exists(mesh_dir):
+  l_mesh_dir = "./%s" % (mesh_bin)
+  g_mesh_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
+  l_node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
+  g_node_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
+  if not os.path.exists(l_mesh_dir) and not os.path.exists(g_mesh_dir):
     os.mkdir(mesh_dir)
   uname = os.uname()[0]
   if re.search("Darwin",uname):
-    if not os.path.exists(node_dir):
+    if not os.path.exists(l_node_dir) and not os.path.exists(g_node_dir):
       command = "cd %s ; npm install %s" % (mesh_dir,mesh_bin)
       output  = get_console_output(command)
       if verbose_mode == True:
@@ -582,14 +585,18 @@ def check_mesh_config(mesh_bin):
 # Start MeshCommander
 
 def start_mesh(mesh_bin,mesh_port):
-  node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
-  handle_output(node_dir)
-  if os.path.exists(node_dir):
-    command = "cd %s ; node %s --port %s" % (node_dir,mesh_bin,mesh_port)
+  l_node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
+  g_node_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
+  if os.path.exists(l_node_dir):
+    command = "cd %s ; node %s --port %s" % (l_node_dir,mesh_bin,mesh_port)
     os.system(command)
   else:
-    string = "%s not installed" % (mesh_bin)
-    handle_output(string)
+    if os.path.exists(g_node_dir):
+      command = "cd %s ; node %s --port %s" % (g_node_dir,mesh_bin,mesh_port)
+      os.system(command)
+    else:
+      string = "%s not installed" % (mesh_bin)
+      handle_output(string)
   return
 
 def get_ips():
@@ -645,8 +652,11 @@ def get_password(ip,username):
 
 # Sol to host
 
-def sol_to_host(ip,password):
-  command = "export AMT_PASSWORD=\"%s\" ; amtterm %s" % (password,ip)
+def sol_to_host(ip,username,password,oob_type):
+  if oob_type == "amt":
+    command = "export AMT_PASSWORD=\"%s\" ; amtterm %s" % (password,ip)
+  else:
+    command = "ipmitool -I lanplus -U %s -P %s -H %s sol activate" % (username,password,ip)
   os.system(command)
   return
 
@@ -775,6 +785,54 @@ def get_idrac_value(get_value,ip,username,password):
   ssh.close()
   return
 
+# Use docker container to drive iDRAC KVM
+
+def idrac_kvm(ip,port,username,password):
+  string  = "Docker iDRAC KVM redirection tool"
+  command = "which docker"
+  output  = os.popen(command).read()
+  if not re.search(r"^/",output):
+    output = "Warning:\tNo docker installation found"
+    handle_output(output)
+    exit()
+  command = "docker images |grep idrac6"
+  output  = os.popen(command).read()
+  if not re.search(r"idrac6",output):
+    output = "Information:\tInstalling %s" % (string) 
+    handle_output(output)
+    command = "docker pull domistyle/idrac6"
+    if verbose_mode == True:
+      output = "Executing:\t%s" % (command)
+      handle_output(output)
+    output  = os.popen(command).read()
+    if verbose_mode == True:
+      handle_output(output)
+  command = "docker ps |grep idrac |awk '{print $1}'"
+  process = os.popen(command).read()
+  process = process.rstrip()
+  if re.search(r"[0-9]",output):
+    output = "Warning:\tInstance of %s already running" % (string)
+    handle_output(output)
+    if kill_mode == True:
+      output = "Information:\tStopping existing %s instance" % (string)
+      handle_output(output)
+      command = "docker kill %s" % (process)
+      output  = os.popen(command).read()
+      if verbose_mode == True:
+        handle_output(output)
+    else:
+      exit()
+  command = "docker run -d -p %s:%s -p 5900:5900 -e IDRAC_HOST=%s -e IDRAC_USER=%s -e IDRAC_PASSWORD=%s domistyle/idrac6" % (port,port,ip,username,password)
+  if verbose_mode == True:
+    output = "Executing:\t%s" % (command)
+    handle_output(output)
+  output = os.popen(command).read()
+  if verbose_mode == True:
+    handle_output(output)
+  output = "Information:\tStarting %s at http://127.0.0.1:%s" % (string,port)
+  handle_output(output)
+  return
+
 # Handle type
 
 if option["type"]:
@@ -817,6 +875,13 @@ if option["insecure"]:
 else:
   http_proto = "https"
 
+# Handle mask switch
+
+if option["mask"]:
+  mask_mode = True
+else:
+  mask_mode = False
+
 # Handle username switch
 
 if option["username"]:
@@ -831,7 +896,12 @@ else:
         if option["ip"]:
           username = get_username(ip)
       else:
-        username = get_username(ip)
+        if not option["ip"]:
+          output = "Warning:\tNo IP specified"
+          handle_output(output)
+          exit()
+        else:
+          username = get_username(ip)
 
 # Handle password switch
 
@@ -864,19 +934,19 @@ if option["verbose"]:
 else:
   verbose_mode = False
 
+# Handle kill switch
+
+if option["kill"]:
+  kill_mode = True
+else:
+  kill_mode = False
+
 # Handle verbose switch
 
 if option["debug"]:
   debug_mode = True 
 else:
   debug_mode = False
-
-# Handle mask switch
-
-if option["mask"]:
-  mask_mode = True
-else:
-  mask_mode = False
 
 # Handle get switch
 
@@ -981,6 +1051,11 @@ if option["check"]:
 
 if option["port"]:
   port = option["port"]
+else:
+  if option["type"]:
+    if option["type"].lower() == "idrackvm":
+      port = "5800"
+
 
 # Handle MeshCmd option
 
@@ -1043,10 +1118,21 @@ if option["type"]:
           ips.append("")
           password = ""
           username = ""
+        else:
+          output = "Warning:\tNo IP specified"
+          handle_output(output)
+          exit()
   for ip in ips:
+    if re.search(r"amt|idrac",oob_type) and option["sol"]:
+      status = check_ping(ip)
+      if not status == False:
+        sol_to_host(ip,username,password,oob_type)
+        exit()    
     if option["allhosts"]:
       username = get_username(ip)
       password = get_password(ip,username)
+    if oob_type == "idrackvm":
+      idrac_kvm(ip,port,username,password)
     if oob_type == "idrac":
       if option["get"]:
         status = check_ping(ip)
@@ -1057,13 +1143,8 @@ if option["type"]:
         if not status == False:
           set_idrac_value(ip,username,password,hostname,domainname,netmask,gateway,primarydns,secondarydns,primaryntp,secondaryntp,primarysyslog,secondarysyslog,syslogport,power)
     if oob_type == "amt":
-      if option["sol"] or option["meshcmd"]:
-        if option["sol"]:
-          status = check_ping(ip)
-          if not status == False:
-            sol_to_host(ip,password)
-        else:
-          mesh_command(ip,password,meshcmd,meshcmd_bin)
+      if option["meshcmd"]:
+        mesh_command(ip,password,meshcmd,meshcmd_bin)
       else:
         driver = start_web_driver()
       if option["check"]:
