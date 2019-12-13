@@ -657,6 +657,9 @@ def sol_to_host(ip,username,password,oob_type):
     command = "export AMT_PASSWORD=\"%s\" ; amtterm %s" % (password,ip)
   else:
     command = "ipmitool -I lanplus -U %s -P %s -H %s sol activate" % (username,password,ip)
+  if verbose_mode == True:
+    string = "Executing:\t%s" % (command)
+    handle_output(string)
   os.system(command)
   return
 

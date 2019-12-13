@@ -70,3 +70,5 @@
 # Added iDRAC KVM redirection tool and iDRAC sol capability
 # 0.3.5: Tue  3 Dec 2019 19:33:42 AEDT
 # Updated MeshCommander code to support global module install directory
+# 0.3.6: Fri 13 Dec 2019 16:17:33 AEDT
+# Added verbose output for ipmitool command
