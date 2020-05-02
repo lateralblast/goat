@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.3.7
+# Version:      0.3.8
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -81,6 +81,8 @@ try:
 except ImportError:
   install_and_import("lxml")
   import lxml
+
+from lxml import etree
 
 # load wget
 
@@ -805,9 +807,144 @@ def set_ipmi_value(set_value,ip,username,password):
   os.system(command)
   return
 
+# Use javaws to iDRAC KVM
+
+def java_idrac_kvm(ip,port,username,password,home_dir):
+  web_url = "https://%s:443" % (ip)
+  command = "which javaws"
+  output  = os.popen(command).read()
+  if not re.search(r"^/",output):
+    output = "Warning:\tNo Java installation found"
+    handle_output(output)
+    exit()
+  xml_file   = "/tmp/%s.jnlp" % (ip)
+  exceptions = "%s/Library/Application Support/Oracle/Java/Deployment/security/exception.sites" % (home_dir)
+  if os.path.exists(exceptions):
+    with open(exceptions) as file:
+      if not web_url in file.read():
+        with open(exceptions, 'a') as file:
+          file.write(web_url)
+  else:
+    with open(exceptions, 'a') as file:
+      file.write(web_url)
+  data = []
+  data.append('<?xml version="1.0" encoding="UTF-8"?>')
+  string = '<jnlp codebase="%s" spec="1.0+">' % (web_url)
+  data.append(string)
+  data.append('<information>')
+  data.append('  <title>Virtual Console Client</title>')
+  data.append('  <vendor>Dell Inc.</vendor>')
+  string = '  <icon href="%s/images/logo.gif" kind="splash"/>' % (web_url)
+  data.append(string)
+  data.append('  <shortcut online="true"/>')
+  data.append('</information>')
+  data.append('<application-desc main-class="com.avocent.idrac.kvm.Main">')
+  string = '  <argument>ip=%s</argument>' % (ip)
+  data.append(string)
+  data.append('  <argument>vm=1</argument>')
+  string = '  <argument>title=%s</argument>' % (ip)
+  data.append(string)
+  string = '  <argument>user=%s</argument>' % (username)
+  data.append(string)
+  string = '  <argument>password=%s</argument>' % (password)
+  data.append(string)
+  string = '  <argument>kmport=%s</argument>' % (port)
+  data.append(string)
+  string = '  <argument>vport=%s</argument>' % (port)
+  data.append(string)
+  data.append('  <argument>apcp=1</argument>')
+  data.append('  <argument>reconnect=2</argument>')
+  data.append('  <argument>chat=1</argument>')
+  data.append('  <argument>F1=1</argument>')
+  data.append('  <argument>custom=0</argument>')
+  data.append('  <argument>scaling=15</argument>')
+  data.append('  <argument>minwinheight=100</argument>')
+  data.append('  <argument>minwinwidth=100</argument>')
+  data.append('  <argument>videoborder=0</argument>')
+  data.append('  <argument>version=2</argument>')
+  data.append('</application-desc>')
+  data.append('<security>')
+  data.append('  <all-permissions/>')
+  data.append('</security>')
+  data.append('<resources>')
+  data.append('  <j2se version="1.6+"/>')
+  string = '  <jar href="%s/software/avctKVM.jar" download="eager" main="true" />' % (web_url)
+  data.append(string)
+  data.append('</resources>')
+  data.append('<resources os="Windows" arch="x86">')
+  string = '  <nativelib href="%s/software/avctKVMIOWin32.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  string = '  <nativelib href="%s/software/avctVMAPI_DLLWin32.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  data.append('</resources>')
+  data.append('<resources os="Windows" arch="amd64">')
+  string = '  <nativelib href="%s/software/avctKVMIOWin64.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  string = '  <nativelib href="%s/software/avctVMAPI_DLLWin64.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  data.append('</resources>')
+  data.append('<resources os="Windows" arch="x86_64">')
+  string = '  <nativelib href="%s/software/avctKVMIOWin64.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  string = '  <nativelib href="%s/software/avctVMAPI_DLLWin64.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  data.append('</resources>')
+  data.append('<resources os="Linux" arch="x86">')
+  string = '  <nativelib href="%s/software/avctKVMIOLinux32.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  string = '  <nativelib href="%s/software/avctVMAPI_DLLLinux32.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  data.append('</resources>')
+  data.append('<resources os="Linux" arch="i386">')
+  string = '  <nativelib href="%s/software/avctKVMIOLinux32.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  string = '  <nativelib href="%s/software/avctVMAPI_DLLLinux32.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  data.append('</resources>')
+  data.append('<resources os="Linux" arch="i586">')
+  string = '  <nativelib href="%s/software/avctKVMIOLinux32.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  string = '  <nativelib href="%s/software/avctVMAPI_DLLLinux32.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  data.append('</resources>')
+  data.append('<resources os="Linux" arch="i686">')
+  string = '  <nativelib href="%s/software/avctKVMIOLinux32.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  string = '  <nativelib href="%s/software/avctVMAPI_DLLLinux32.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  data.append('</resources>')
+  data.append('<resources os="Linux" arch="amd64">')
+  string = '  <nativelib href="%s/software/avctKVMIOLinux64.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  string = '  <nativelib href="%s/software/avctVMAPI_DLLLinux64.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  data.append('</resources>')
+  data.append('<resources os="Linux" arch="x86_64">')
+  string = '  <nativelib href="%s/software/avctKVMIOLinux64.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  string = '  <nativelib href="%s/software/avctVMAPI_DLLLinux64.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  data.append('</resources>')
+  data.append('<resources os="Mac OS X" arch="x86_64">')
+  string = '  <nativelib href="%s/software/avctKVMIOMac64.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  string = '  <nativelib href="%s/software/avctVMAPI_DLLMac64.jar" download="eager"/>' % (web_url)
+  data.append(string)
+  data.append('</resources>')
+  data.append('</jnlp>')
+  with open(xml_file, 'w') as file:
+    for item in data:
+      file.write("%s\n" % item)
+  if os.path.exists(xml_file):
+    command = "chmod 700 %s" % (xml_file)
+    os.system(command)
+    command = "javaws %s" % (xml_file)
+    os.system(command)
+
+
 # Use docker container to drive iDRAC KVM
 
-def idrac_kvm(ip,port,username,password):
+def web_idrac_kvm(ip,port,username,password):
   string  = "Docker iDRAC KVM redirection tool"
   command = "which docker"
   output  = os.popen(command).read()
@@ -830,7 +967,7 @@ def idrac_kvm(ip,port,username,password):
   command = "docker ps |grep idrac |awk '{print $1}'"
   process = os.popen(command).read()
   process = process.rstrip()
-  if re.search(r"[0-9]",output):
+  if re.search(r"[0-9]",process):
     output = "Warning:\tInstance of %s already running" % (string)
     handle_output(output)
     if kill_mode == True:
@@ -1075,8 +1212,10 @@ if option["port"]:
   port = option["port"]
 else:
   if option["type"]:
-    if option["type"].lower() == "idrackvm":
+    if option["type"].lower() == "webidrac":
       port = "5800"
+    if option["type"].lower() == "javaidrac":
+      port = "5900"
 
 # Handle boot switch
 
@@ -1157,8 +1296,10 @@ if option["type"]:
     if option["allhosts"]:
       username = get_username(ip)
       password = get_password(ip,username)
-    if oob_type == "idrackvm":
-      idrac_kvm(ip,port,username,password)
+    if oob_type == "webidrac":
+      web_idrac_kvm(ip,port,username,password)
+    if oob_type == "javaidrac":
+      java_idrac_kvm(ip,port,username,password,home_dir)
     if oob_type == "ipmi":
       status = check_ping(ip)
       if not status == False:

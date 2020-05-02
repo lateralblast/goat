@@ -74,3 +74,5 @@
 # Added verbose output for ipmitool command
 # 0.3.7: Sat  2 May 2020 12:06:04 AEST
 # Added ipmi set/power function
+# 0.3.8: Sat  2 May 2020 17:49:03 AEST
+# Cleaned up web iDRAC code and added Java iDRAC code

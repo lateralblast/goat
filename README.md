@@ -335,12 +335,6 @@ Reset device:
 Sending power reset to 192.168.1.171 (Intel AMT has a 30s pause before operation is done)
 ```
 
-Power on device via IPMI:
-
-```
-./goat.py --ip 192.168.1.171 --set --power --type ipmi
-```
-
 Start MeshCommander:
 
 ```
@@ -409,8 +403,33 @@ Event Log,Event,Time,Source,Description
 7,5/28/2019,9:59 pm,BIOS,Performing PCI configuration.
 ```
 
-iDRAC Examples
---------------
+iDRAC Web KVM Examples
+----------------------
+
+This uses the docker iDRAC container:
+
+https://github.com/DomiStyle/docker-idrac6
+
+
+Start iDRAC KVM webserver:
+
+```
+./goat.py --type webidrac --ip 192.168.10.191
+```
+
+iDRAC Java KVM Examples
+-----------------------
+
+This method creates a JNLP file and runs it with javaws
+
+Start javaws iDRAC KVM session:
+
+```
+./goat.py --type javaidrac --ip 192.168.10.191
+```
+
+iDRAC SSH control examples
+--------------------------
 
 Get BIOS version:
 
@@ -445,4 +464,25 @@ Power on server:
 
 ```
 ./goat.py --set --power on --type idrac --ip 192.168.10.213 --user root --password XXXXXXXX 
+```
+
+IPMI Examples:
+--------------
+
+Power on device via IPMI:
+
+```
+./goat.py --ip 192.168.1.171 --set --power on --type ipmi
+```
+
+Set boot device via IPMI:
+
+```
+./goat.py --ip 192.168.1.171 --set --boot pxe --type ipmi
+```
+
+Get sensor information via IPMI:
+
+```
+./goat.py --ip 192.168.1.171 --get sensor --type ipmi
 ```
