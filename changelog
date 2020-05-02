@@ -72,3 +72,5 @@
 # Updated MeshCommander code to support global module install directory
 # 0.3.6: Fri 13 Dec 2019 16:17:33 AEDT
 # Added verbose output for ipmitool command
+# 0.3.7: Sat  2 May 2020 12:06:04 AEST
+# Added ipmi set/power function

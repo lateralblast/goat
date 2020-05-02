@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.3.6
+# Version:      0.3.7
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -150,6 +150,7 @@ parser.add_argument("--syslogport",required=False)          # Set Syslog port
 parser.add_argument("--primaryntp",required=False)          # Set primary NTP
 parser.add_argument("--secondaryntp",required=False)        # Set secondary NTP 
 parser.add_argument("--meshcmd",required=False)             # Run Meshcmd
+parser.add_argument("--boot",required=False)                # Set boot device
 parser.add_argument("--set",action='store_true')            # Set value
 parser.add_argument("--kill",action='store_true')           # Stop existing session
 parser.add_argument("--version",action='store_true')        # Display version
@@ -788,6 +789,22 @@ def get_idrac_value(get_value,ip,username,password):
   ssh.close()
   return
 
+# Get IPMI value
+
+def get_ipmi_value(get_value,ip,username,password):
+  command = "ipmitool -I lanplus -U %s -P %s -H %s %s" % (username,password,ip,get_value)
+  handle_output(command)
+  os.system(command)
+  return
+
+# Set IPMI value
+
+def set_ipmi_value(set_value,ip,username,password):
+  command = "ipmitool -I lanplus -U %s -P %s -H %s %s" % (username,password,ip,set_value)
+  handle_output(command)
+  os.system(command)
+  return
+
 # Use docker container to drive iDRAC KVM
 
 def idrac_kvm(ip,port,username,password):
@@ -844,6 +861,8 @@ if option["type"]:
   if oob_type == "amt":
     default_user = "admin"
   if oob_type == "idrac":
+    default_user = "root"
+  if oob_type == "ipmi":
     default_user = "root"
 
 # Handle version switch
@@ -1059,6 +1078,10 @@ else:
     if option["type"].lower() == "idrackvm":
       port = "5800"
 
+# Handle boot switch
+
+if option['boot']:
+  boot = option['boot']
 
 # Handle MeshCmd option
 
@@ -1126,7 +1149,7 @@ if option["type"]:
           handle_output(output)
           exit()
   for ip in ips:
-    if re.search(r"amt|idrac",oob_type) and option["sol"]:
+    if re.search(r"amt|idrac|ipmi",oob_type) and option["sol"]:
       status = check_ping(ip)
       if not status == False:
         sol_to_host(ip,username,password,oob_type)
@@ -1136,14 +1159,23 @@ if option["type"]:
       password = get_password(ip,username)
     if oob_type == "idrackvm":
       idrac_kvm(ip,port,username,password)
+    if oob_type == "ipmi":
+      status = check_ping(ip)
+      if not status == False:
+        if option['get']:
+          get_ipmi_value(get_value,ip,username,password)
+        if option['boot']:
+          set_value = "chassis bootparam set bootflag %s" % (boot)
+          set_ipmi_value(set_value,ip,username,password)
+        if option['power']:
+          set_value = "chassis power %s" % (power)
+          set_ipmi_value(set_value,ip,username,password)
     if oob_type == "idrac":
-      if option["get"]:
-        status = check_ping(ip)
-        if not status == False:
+      status = check_ping(ip)
+      if not status == False:
+        if option["get"]:
           bios = get_idrac_value(get_value,ip,username,password)
-      if option["set"]:
-        status = check_ping(ip)
-        if not status == False:
+        if option["set"]:
           set_idrac_value(ip,username,password,hostname,domainname,netmask,gateway,primarydns,secondarydns,primaryntp,secondaryntp,primarysyslog,secondarysyslog,syslogport,power)
     if oob_type == "amt":
       if option["meshcmd"]:

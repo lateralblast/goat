@@ -335,6 +335,12 @@ Reset device:
 Sending power reset to 192.168.1.171 (Intel AMT has a 30s pause before operation is done)
 ```
 
+Power on device via IPMI:
+
+```
+./goat.py --ip 192.168.1.171 --set --power --type ipmi
+```
+
 Start MeshCommander:
 
 ```
