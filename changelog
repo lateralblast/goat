@@ -76,3 +76,5 @@
 # Added ipmi set/power function
 # 0.3.8: Sat  2 May 2020 17:49:03 AEST
 # Cleaned up web iDRAC code and added Java iDRAC code
+# 0.3.9: Fri 29 May 2020 14:21:13 AEST
+# Bug fixes
