@@ -163,20 +163,13 @@ Getting help:
 
 ```
 ./goat.py --help
-usage: goat.py [-h] [--ip IP] [--username USERNAME] [--type TYPE] [--get GET]
-               [--password PASSWORD] [--search SEARCH] [--avail AVAIL]
-               [--check CHECK] [--model MODEL] [--port PORT] [--power POWER]
-               [--hostname HOSTNAME] [--gateway GATEWAY] [--netmask NETMASK]
-               [--domainname DOMAINNAME] [--primarydns PRIMARYDNS]
-               [--secondarydns SECONDARYDNS] [--primarysyslog PRIMARYSYSLOG]
-               [--secondarysyslog SECONDARYSYSLOG] [--syslogport SYSLOGPORT]
-               [--primaryntp PRIMARYNTP] [--secondaryntp SECONDARYNTP]
-               [--meshcmd MESHCMD] [--set] [--version] [--insecure]
-               [--verbose] [--debug] [--mask] [--meshcommander]
-               [--meshcentral] [--options] [--allhosts] [--sol] [--download]
+usage: goat.py [-h] [--ip IP] [--username USERNAME] [--type TYPE] [--get GET] [--password PASSWORD]
+               [--search SEARCH] [--avail AVAIL] [--check CHECK] [--model MODEL] [--port PORT]
+               [--power POWER] [--hostname HOSTNAME] [--gateway GATEWAY] [--netmask NETMASK]
+               [--outlet OUTLET] [--domainname DOMAINNAME] [--primarydns PRIMARYDNS] [--secondarydns SECONDARYDNS] [--primarysyslog PRIMARYSYSLOG] [--secondarysyslog SECONDARYSYSLOG] [--syslogport SYSLOGPORT] [--primaryntp PRIMARYNTP] [--secondaryntp SECONDARYNTP] [--meshcmd MESHCMD] [--boot BOOT] [--set] [--kill] [--version] [--insecure] [--verbose] [--debug] [--mask] [--meshcommander] [--meshcentral] [--options] [--allhosts] [--sol] [--download]
 
 optional arguments:
-  -h, --help show this help message and exit
+  -h, --help            show this help message and exit
   --ip IP
   --username USERNAME
   --type TYPE
@@ -191,6 +184,7 @@ optional arguments:
   --hostname HOSTNAME
   --gateway GATEWAY
   --netmask NETMASK
+  --outlet OUTLET
   --domainname DOMAINNAME
   --primarydns PRIMARYDNS
   --secondarydns SECONDARYDNS
@@ -200,7 +194,9 @@ optional arguments:
   --primaryntp PRIMARYNTP
   --secondaryntp SECONDARYNTP
   --meshcmd MESHCMD
+  --boot BOOT
   --set
+  --kill
   --version
   --insecure
   --verbose
@@ -217,43 +213,48 @@ optional arguments:
 Getting information about options:
 
 ```
+./goat.py --options
+
 Options:
 
---ip                Specify IP of OOB/Remote Management interface
---username          Set Username
---type              Set Type
---get               Get Parameter
---password          Set Password
---search            Search output for value
---avail             Get available version from vendor (e.g. BIOS)
---check             Check current version against available version from vendor (e.g. BIOS)
---model             Specify model (can be used with --avail)
---port              Specify port to run service on
---power             Set power state (on, off, reset)
---hostname          Set hostname
---gateway           Set gateway
---netmask           Set netmask
---domainname        Set dommainname
---primarydns        Set primary DNS
---secondarydns      Set secondary DNS
---primarysyslog     Set primary Syslog
---secondarysyslog   Set secondary Syslog
---syslogport        Set Syslog port
---primaryntp        Set primary NTP
---secondaryntp      Set secondary NTP
---meshcmd           Run Meshcmd
---set               Set value
---version           Display version
---insecure          Use HTTP/Telnet
---verbose           Enable verbose output
---debug             Enable debug output
---mask              Mask serial and hostname output output
---meshcommander     Use Meshcommander
---meshcentral       Use Meshcentral
---options           Display options information
---allhosts          Automate via .goatpass
---sol               Start a SOL connection to host
---download          Download BIOS
+--ip              Specify IP of OOB/Remote Management interface
+--username		    Set Username
+--type			      Set Type of OOB device
+--get			        Get Parameter
+--password		    Set Password
+--search		      Search output for value
+--avail			      Get available version from vendor (e.g. BIOS)
+--check			      Check current version against available version from vendor (e.g. BIOS)
+--model			      Specify model (can be used with --avail)
+--port			      Specify port to run service on
+--power			      Set power state (on, off, reset)
+--hostname		    Set hostname
+--gateway		      Set gateway
+--netmask		      Set netmask
+--outlet		      Set netmask
+--domainname		  Set dommainname
+--primarydns		  Set primary DNS
+--secondarydns		Set secondary DNS
+--primarysyslog		Set primary Syslog
+--secondarysyslog	Set secondary Syslog
+--syslogport		  Set Syslog port
+--primaryntp		  Set primary NTP
+--secondaryntp		Set secondary NTP
+--meshcmd		      Run Meshcmd
+--boot			      Set boot device
+--set			        Set value
+--kill			      Stop existing session
+--version		      Display version
+--insecure		    Use HTTP/Telnet
+--verbose		      Enable verbose output
+--debug			      Enable debug output
+--mask			      Mask serial and hostname output output
+--meshcommander		Use Meshcommander
+--meshcentral		  Use Meshcentral
+--options		      Display options information
+--allhosts		    Automate via .goatpass
+--sol			        Start a SOL connection to host
+--download		    Download BIOS
 ```
 
 Intel AMT Examples
@@ -485,4 +486,19 @@ Get sensor information via IPMI:
 
 ```
 ./goat.py --ip 192.168.1.171 --get sensor --type ipmi
+```
+
+APC PDU Examples:
+-----------------
+
+Power on outlet 1:
+
+```
+./goat.py --type apc --set --power on --outlet 1 --user apc --ip 192.168.10.201
+```
+
+Power off outlet 1:
+
+```
+./goat.py --type apc --set --power off --outlet 1 --user apc --ip 192.168.10.201
 ```

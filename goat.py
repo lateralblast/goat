@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.3.9
+# Version:      0.4.0
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -100,6 +100,14 @@ except ImportError:
   install_and_import("paramiko")
   import paramiko
 
+# Load pexpect
+
+try:
+  import pexpect
+except ImportError:
+  install_and_import("pexpect")
+  import pexpect
+
 script_exe  = sys.argv[0]
 script_dir  = os.path.dirname(script_exe)
 uname_arch  = subprocess.check_output("uname -m",shell=True)
@@ -131,7 +139,7 @@ if sys.argv[-1] == sys.argv[0]:
 parser = argparse.ArgumentParser()
 parser.add_argument("--ip",required=False)                  # Specify IP of OOB/Remote Management interface
 parser.add_argument("--username",required=False)            # Set Username
-parser.add_argument("--type",required=False)                # Set Type
+parser.add_argument("--type",required=False)                # Set Type of OOB device
 parser.add_argument("--get",required=False)                 # Get Parameter
 parser.add_argument("--password",required=False)            # Set Password
 parser.add_argument("--search",required=False)              # Search output for value
@@ -143,6 +151,7 @@ parser.add_argument("--power",required=False)               # Set power state (o
 parser.add_argument("--hostname",required=False)            # Set hostname
 parser.add_argument("--gateway",required=False)             # Set gateway
 parser.add_argument("--netmask",required=False)             # Set netmask
+parser.add_argument("--outlet",required=False)              # Set netmask
 parser.add_argument("--domainname",required=False)          # Set dommainname
 parser.add_argument("--primarydns",required=False)          # Set primary DNS
 parser.add_argument("--secondarydns",required=False)        # Set secondary DNS
@@ -941,6 +950,90 @@ def java_idrac_kvm(ip,port,username,password,home_dir):
     command = "javaws %s" % (xml_file)
     os.system(command)
 
+# Set APC power
+
+def set_apc_power(power,ip,outlet,username,password):
+  command = "ssh -V 2>&1 |cut -f1 -d, |cut -f2 -d_"
+  output  = os.popen(command).read()
+  version = output.rstrip()
+  major   = version.split(".")[0]
+  major   = int(major)
+  minor   = version.split(".")[1]
+  minor   = minor.split("p")[0]
+  minor   = int(minor)
+  ssh_opt = "-oKexAlgorithms=+diffie-hellman-group1-sha1 -oStrictHostKeyChecking=no"
+  if major > 7:
+    command = "which docker"
+    output  = os.popen(command).read()
+    if not re.search(r"^/",output):
+      output = "Warning:\tNo docker installation found"
+      handle_output(output)
+      exit()
+    string  = "Docker old SHH version tool"
+    command = "docker images |grep ostrich"
+    output  = os.popen(command).read()
+    if not re.search(r"ostrich",output):
+      output = "Information:\tInstalling %s" % (string) 
+      handle_output(output)
+      with open("/tmp/Dockerfile", 'w') as file:
+        file.write("FROM ubuntu:16.0\n")
+        file.write("RUN apt-get update && apt-get install -y openssh-client\n")
+      with open("/tmp/docker-compose.yml", 'w') as file:
+        file.write('version: "3"\n')
+        file.write("services:\n")
+        file.write("  ostrich:\n")
+        file.write("    build:\n")
+        file.write("      context: .\n")
+        file.write("      dockerfile: Dockerfile\n")
+        file.write("    image: ostrich\n")
+        file.write("    container_name: ostrich\n")
+        file.write("    entrypoint: /bin/bash\n")
+        file.write("    working_dir: /root\n")
+    command = "docker run -it ostrich /bin/bash -c \"ssh %s %s@%s\"" % (ssh_opt,username,ip)
+  else:
+    command = "ssh %s %s@%s" % (ssh_opt,username,ip)
+  #child.expect("")
+  #child.sendline("")
+  outlet = str(outlet) 
+  outlet = "%s\r" % (outlet)
+  child  = pexpect.spawnu(command)
+  if verbose_mode == True:
+    child.logfile = sys.stdout
+  child.expect("password: ")
+  child.sendline(password)
+  child.expect("- Control Console -")
+  child.sendline("1\r")
+  child.expect("- Device Manager -")
+  child.sendline("2\r")
+  child.expect("- Outlet Management -")
+  child.sendline("1\r")
+  child.expect("- Outlet Control/Configuration -")
+  child.sendline(outlet)
+  child.expect("1- Control Outlet")
+  child.sendline("1\r")
+  child.expect("- Control Outlet -")
+  if power == "on":
+    child.sendline("1\r")
+  else:
+    child.sendline("2\r")
+  child.expect("YES")
+  child.sendline("YES\r")
+  child.expect("ENTER")
+  child.sendline("\r")
+  child.expect("- Control Outlet -")
+  child.sendline("\033")
+  child.expect(" 1- Control Outlet")
+  child.sendline("\033")
+  child.expect("- Outlet Control/Configuration -")
+  child.sendline("\033")
+  child.expect("- Outlet Management -")
+  child.sendline("\033")
+  child.expect("- Device Manager -")
+  child.sendline("\033")
+  child.expect("- Control Console -")
+  child.sendline("4\r")
+  child.close()
+  return
 
 # Use docker container to drive iDRAC KVM
 
@@ -1051,6 +1144,8 @@ else:
       username = get_username(ip)
   else:
     if option["type"] and not option["allhosts"]:
+      if option['type'] == "apc":
+        username = get_username(ip)
       if option["meshcmd"]:
         if option["ip"]:
           username = get_username(ip)
@@ -1217,6 +1312,13 @@ else:
     if option["type"].lower() == "javaidrac":
       port = "5900"
 
+# Handle outlet switch
+
+if option['outlet']:
+  outlet = option['outlet']
+else:
+  outlet = ""
+
 # Handle boot switch
 
 if option['boot']:
@@ -1300,6 +1402,9 @@ if option["type"]:
       web_idrac_kvm(ip,port,username,password)
     if oob_type == "javaidrac":
       java_idrac_kvm(ip,port,username,password,home_dir)
+    if oob_type == "apc":
+      if option['set']:
+        set_apc_power(power,ip,outlet,username,password)
     if oob_type == "ipmi":
       status = check_ping(ip)
       if not status == False:
