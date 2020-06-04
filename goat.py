@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.4.0
+# Version:      0.4.1
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -819,7 +819,7 @@ def set_ipmi_value(set_value,ip,username,password):
 # Use javaws to iDRAC KVM
 
 def java_idrac_kvm(ip,port,username,password,home_dir):
-  web_url = "https://%s:443\n" % (ip)
+  web_url = "https://%s" % (ip)
   command = "which javaws"
   output  = os.popen(command).read()
   if not re.search(r"^/",output):
@@ -833,9 +833,11 @@ def java_idrac_kvm(ip,port,username,password,home_dir):
       if not web_url in file.read():
         with open(exceptions, 'a') as file:
           file.write(web_url)
+          file.write("\n")
   else:
     with open(exceptions, 'a') as file:
       file.write(web_url)
+      file.write("\n")
   data = []
   data.append('<?xml version="1.0" encoding="UTF-8"?>')
   string = '<jnlp codebase="%s" spec="1.0+">' % (web_url)
