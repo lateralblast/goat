@@ -339,7 +339,7 @@ Sending power reset to 192.168.1.171 (Intel AMT has a 30s pause before operation
 Start MeshCommander:
 
 ```
-./goat.py --mesh
+./goat.py --meshcommander
 MeshCommander running on http://127.0.0.1:3000.
 ```
 

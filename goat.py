@@ -580,18 +580,18 @@ def check_local_config():
 
 def check_mesh_config(mesh_bin):
   l_mesh_dir = "./%s" % (mesh_bin)
+  l_mesh_bin = "./%s/%s" % (mesh_bin,mesh_bin)
   g_mesh_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
+  g_mesh_bin = "/usr/local/lib/node_modules/%s/%s" % (mesh_bin,mesh_bin)
   l_node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
   g_node_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
-  if not os.path.exists(l_mesh_dir) and not os.path.exists(g_mesh_dir):
-    os.mkdir(mesh_dir)
-  uname = os.uname()[0]
-  if re.search("Darwin",uname):
-    if not os.path.exists(l_node_dir) and not os.path.exists(g_node_dir):
-      command = "cd %s ; npm install %s" % (mesh_dir,mesh_bin)
+  if not os.path.exists(l_mesh_bin) and not os.path.exists(g_mesh_bin):
+    if not os.path.exists(l_mesh_dir):
+      os.mkdir(l_mesh_dir)
+      command = "cd %s ; npm install %s" % (l_mesh_dir,mesh_bin)
       output  = get_console_output(command)
       if verbose_mode == True:
-        handle_output(output)
+         handle_output(output)
   return
 
 # Start MeshCommander
