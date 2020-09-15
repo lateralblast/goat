@@ -82,3 +82,5 @@
 # Added support for APC PDUs
 # 0.4.1: Tue 15 Sep 2020 12:49:40 AEST
 # Fixed bug with meshcommander install
+# 1.4.2: Tue 15 Sep 2020 14:34:56 AEST
+# Updated meshcmd code

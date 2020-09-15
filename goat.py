@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.4.1
+# Version:      0.4.2
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -691,7 +691,28 @@ def start_web_driver():
 
 def mesh_command(ip,command,meshcmd,meshcmd_bin):
   if not os.path.exists(meshcmd_bin):
-    meshcmd_url = "https://github.com/lateralblast/goat/blob/master/%s?raw=true" % (meshcmd_bin)
+    uname_arch  = subprocess.check_output("uname",shell=True)
+    if uname == "Darwin":
+      return
+    else:
+      if uname == "Linux":
+        os_name   = "linux"
+        if re.search(r"i386|x86", uname_arch):
+          if re.seach(r"64",uname_arch):
+            os_arch = "x86_64"
+          else:
+            os_arch = "i386"
+        else:
+          if re.seach(r"64",uname_arch):
+            os_arch = "arm64"
+          else:
+            os_arch = "arm"
+        fetch_bin = "meshcmd_%s_%s" % (os_name,os_arch) 
+      else:
+        os_name   = "win"
+        fetch_bin = "meshcmd_%s_%s.exe" % (os_name,os_arch) 
+    uname_arch  = subprocess.check_output("uname -m",shell=True)
+    meshcmd_url = "https://github.com/lateralblast/goat/blob/master/meshcmd/%s?raw=true" % (fetch_bin)
     download_file(meshcmd_url,meshcmd_bin)
     command = "chmod +x %s" % (meshcmd_bin)
     os.system(command)
