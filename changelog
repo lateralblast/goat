@@ -82,7 +82,9 @@
 # Added support for APC PDUs
 # 0.4.1: Tue 15 Sep 2020 12:49:40 AEST
 # Fixed bug with meshcommander install
-# 1.4.2: Tue 15 Sep 2020 14:34:56 AEST
+# 0.4.2: Tue 15 Sep 2020 14:34:56 AEST
 # Updated meshcmd code
-# 1.4.3: Mon 25 Oct 2021 17:15:52 AEDT
+# 0.4.3: Mon 25 Oct 2021 17:15:52 AEDT
 # Replaced paramiko SSH client with pexpect due to issues
+# 0.4.4: Mon 25 Oct 2021 17:50:11 AEDT
+# Added group, parameter and values switch for setting specific iDRAC values

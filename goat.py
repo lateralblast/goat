@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.4.3
+# Version:      0.4.4
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -161,6 +161,9 @@ parser.add_argument("--syslogport",required=False)          # Set Syslog port
 parser.add_argument("--primaryntp",required=False)          # Set primary NTP
 parser.add_argument("--secondaryntp",required=False)        # Set secondary NTP 
 parser.add_argument("--meshcmd",required=False)             # Run Meshcmd
+parser.add_argument("--group",required=False)               # Set group
+parser.add_argument("--parameter",required=False)           # Set parameter
+parser.add_argument("--value",required=False)               # Set value
 parser.add_argument("--boot",required=False)                # Set boot device
 parser.add_argument("--set",action='store_true')            # Set value
 parser.add_argument("--kill",action='store_true')           # Stop existing session
@@ -256,7 +259,7 @@ def verify_password(stored_password, provided_password):
 
 # Download file
 
-def download_file(link,file):
+def download_file(link, file):
   if not os.path.exists(file):
     string = "Downloading %s to %s" % (link,file)
     wget.download(link,file)
@@ -264,7 +267,7 @@ def download_file(link,file):
 
 # Get AMT value from web
 
-def get_web_amt_value(avail,model,driver,download):
+def get_web_amt_value(avail, model, driver, download):
   if avail == "bios":
     found    = False
     base_url = "https://downloadcenter.intel.com"
@@ -316,7 +319,7 @@ def handle_output(output):
 
 # Get AMT value
 
-def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
+def get_amt_value(get_value, ip, username, password, driver, http_proto, search):
   sub_value = ""
   if not re.search(r"[A-Z]|[a-z]|[0-9]",search):
     search = ""
@@ -466,7 +469,7 @@ def get_amt_value(get_value,ip,username,password,driver,http_proto,search):
 
 # Set AMT value
 
-def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,primarydns,secondarydns,power):
+def set_amt_value(ip, username, password, driver, http_proto, hostname, dommainname, primarydns, secondarydns, power):
   if http_proto == "http":
     port_no = "16992"
   else:
@@ -538,7 +541,7 @@ def set_amt_value(ip,username,password,driver,http_proto,hostname,dommainname,pr
 
 # Compare versions
 
-def compare_versions(bios,avail,oob_type):
+def compare_versions(bios, avail, oob_type):
   if oob_type == "amt":
     if re.search(".",bios):
       current = bios.split(".")[2]
@@ -596,7 +599,7 @@ def check_mesh_config(mesh_bin):
 
 # Start MeshCommander
 
-def start_mesh(mesh_bin,mesh_port):
+def start_mesh(mesh_bin, mesh_port):
   l_node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
   g_node_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
   if os.path.exists(l_node_dir):
@@ -642,7 +645,7 @@ def get_username(ip):
 
 # Get password
 
-def get_password(ip,username):
+def get_password(ip, username):
   password  = ""
   pass_file = "%s/.%s" % (home_dir,password_db)
   prompt    = "Password for %s:" % (ip)
@@ -664,7 +667,7 @@ def get_password(ip,username):
 
 # Sol to host
 
-def sol_to_host(ip,username,password,oob_type):
+def sol_to_host(ip, username, password, oob_type):
   if oob_type == "amt":
     command = "export AMT_PASSWORD=\"%s\" ; amtterm %s" % (password,ip)
   else:
@@ -689,7 +692,7 @@ def start_web_driver():
 
 # Run meshcmd
 
-def mesh_command(ip,command,meshcmd,meshcmd_bin):
+def mesh_command(ip, command, meshcmd, meshcmd_bin):
   if not os.path.exists(meshcmd_bin):
     uname_arch  = subprocess.check_output("uname",shell=True)
     if uname == "Darwin":
@@ -733,7 +736,7 @@ def mesh_command(ip,command,meshcmd,meshcmd_bin):
 
 # Initiate SSH Session
 
-def start_ssh_session(ip,username,password):
+def start_ssh_session(ip, username, password):
   ssh_command = "ssh -o StrictHostKeyChecking=no"
   ssh_command = "%s %s@%s" % (ssh_command, username, ip)
   ssh_session = pexpect.spawn(ssh_command)
@@ -741,9 +744,14 @@ def start_ssh_session(ip,username,password):
   ssh_session.sendline(password)
   return ssh_session
 
-# Get iDRAC value
+# Set specific know iDRAC value
 
-def set_idrac_value(ip,username,password,hostname,domainname,netmask,gateway,primarydns,secondarydns,primaryntp,secondaryntp,primarysyslog,secondarysyslog,syslogport,power):
+def set_specific_idrac_value(ip, username, password, group, parameter, value)
+  return
+
+# Get general iDRAC value
+
+def set_idrac_value(ip,username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power):
   commands = []
   ssh_session = start_ssh_session(ip, username, password)
   if re.search(r"[a-z,0-9]",domainname):
@@ -815,7 +823,7 @@ def set_idrac_value(ip,username,password,hostname,domainname,netmask,gateway,pri
 
 # Get iDRAC value
 
-def get_idrac_value(get_value,ip,username,password):
+def get_idrac_value(get_value, ip, username, password):
   ssh_session = start_ssh_session(ip, username, password)
   ssh_session.expect("/admin1-> ")
   if re.search(r"bios|idrac|usc",get_value.lower()):
@@ -839,7 +847,7 @@ def get_idrac_value(get_value,ip,username,password):
 
 # Get IPMI value
 
-def get_ipmi_value(get_value,ip,username,password):
+def get_ipmi_value(get_value, ip, username, password):
   command = "ipmitool -I lanplus -U %s -P %s -H %s %s" % (username,password,ip,get_value)
   handle_output(command)
   os.system(command)
@@ -847,7 +855,7 @@ def get_ipmi_value(get_value,ip,username,password):
 
 # Set IPMI value
 
-def set_ipmi_value(set_value,ip,username,password):
+def set_ipmi_value(set_value, ip, username, password):
   command = "ipmitool -I lanplus -U %s -P %s -H %s %s" % (username,password,ip,set_value)
   handle_output(command)
   os.system(command)
@@ -855,7 +863,7 @@ def set_ipmi_value(set_value,ip,username,password):
 
 # Use javaws to iDRAC KVM
 
-def java_idrac_kvm(ip,port,username,password,home_dir):
+def java_idrac_kvm(ip, port, username, password, home_dir):
   web_url = "https://%s" % (ip)
   command = "which javaws"
   output  = os.popen(command).read()
@@ -997,7 +1005,7 @@ def java_idrac_kvm(ip,port,username,password,home_dir):
 
 # Set APC power
 
-def set_apc_power(power,ip,outlet,username,password):
+def set_apc_power(power, ip, outlet, username, password):
   command = "ssh -V 2>&1 |cut -f1 -d, |cut -f2 -d_"
   output  = os.popen(command).read()
   version = output.rstrip()
@@ -1082,7 +1090,7 @@ def set_apc_power(power,ip,outlet,username,password):
 
 # Use docker container to drive iDRAC KVM
 
-def web_idrac_kvm(ip,port,username,password):
+def web_idrac_kvm(ip, port, username, password):
   string  = "Docker iDRAC KVM redirection tool"
   command = "which docker"
   output  = os.popen(command).read()
