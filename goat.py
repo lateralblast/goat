@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.4.4
+# Version:      0.4.6
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -110,8 +110,8 @@ except ImportError:
 
 script_exe  = sys.argv[0]
 script_dir  = os.path.dirname(script_exe)
-uname_arch  = subprocess.check_output("uname -m",shell=True)
-meshcmd_bin = "%s/meshcmd.%s" % (script_dir,uname_arch)
+uname_arch  = subprocess.check_output("uname -m", shell=True)
+meshcmd_bin = "%s/meshcmd.%s" % (script_dir, uname_arch)
 
 # Print help
 
@@ -137,47 +137,47 @@ if sys.argv[-1] == sys.argv[0]:
 # Get command line arguments
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--ip",required=False)                  # Specify IP of OOB/Remote Management interface
-parser.add_argument("--username",required=False)            # Set Username
-parser.add_argument("--type",required=False)                # Set Type of OOB device
-parser.add_argument("--get",required=False)                 # Get Parameter
-parser.add_argument("--password",required=False)            # Set Password
-parser.add_argument("--search",required=False)              # Search output for value
-parser.add_argument("--avail",required=False)               # Get available version from vendor (e.g. BIOS)
-parser.add_argument("--check",required=False)               # Check current version against available version from vendor (e.g. BIOS)
-parser.add_argument("--model",required=False)               # Specify model (can be used with --avail)
-parser.add_argument("--port",required=False)                # Specify port to run service on
-parser.add_argument("--power",required=False)               # Set power state (on, off, reset)
-parser.add_argument("--hostname",required=False)            # Set hostname
-parser.add_argument("--gateway",required=False)             # Set gateway
-parser.add_argument("--netmask",required=False)             # Set netmask
-parser.add_argument("--outlet",required=False)              # Set netmask
-parser.add_argument("--domainname",required=False)          # Set dommainname
-parser.add_argument("--primarydns",required=False)          # Set primary DNS
-parser.add_argument("--secondarydns",required=False)        # Set secondary DNS
-parser.add_argument("--primarysyslog",required=False)       # Set primary Syslog
-parser.add_argument("--secondarysyslog",required=False)     # Set secondary Syslog
-parser.add_argument("--syslogport",required=False)          # Set Syslog port
-parser.add_argument("--primaryntp",required=False)          # Set primary NTP
-parser.add_argument("--secondaryntp",required=False)        # Set secondary NTP 
-parser.add_argument("--meshcmd",required=False)             # Run Meshcmd
-parser.add_argument("--group",required=False)               # Set group
-parser.add_argument("--parameter",required=False)           # Set parameter
-parser.add_argument("--value",required=False)               # Set value
-parser.add_argument("--boot",required=False)                # Set boot device
-parser.add_argument("--set",action='store_true')            # Set value
-parser.add_argument("--kill",action='store_true')           # Stop existing session
-parser.add_argument("--version",action='store_true')        # Display version
-parser.add_argument("--insecure",action='store_true')       # Use HTTP/Telnet
-parser.add_argument("--verbose",action='store_true')        # Enable verbose output
-parser.add_argument("--debug",action='store_true')          # Enable debug output
-parser.add_argument("--mask",action='store_true')           # Mask serial and hostname output output
-parser.add_argument("--meshcommander",action='store_true')  # Use Meshcommander
-parser.add_argument("--meshcentral",action='store_true')    # Use Meshcentral
-parser.add_argument("--options",action='store_true')        # Display options information
-parser.add_argument("--allhosts",action='store_true')       # Automate via .goatpass
-parser.add_argument("--sol",action='store_true')            # Start a SOL connection to host
-parser.add_argument("--download",action='store_true')       # Download BIOS
+parser.add_argument("--ip", required=False)                  # Specify IP of OOB/Remote Management interface
+parser.add_argument("--username", required=False)            # Set Username
+parser.add_argument("--type", required=False)                # Set Type of OOB device
+parser.add_argument("--get", required=False)                 # Get Parameter
+parser.add_argument("--password", required=False)            # Set Password
+parser.add_argument("--search", required=False)              # Search output for value
+parser.add_argument("--avail", required=False)               # Get available version from vendor (e.g. BIOS)
+parser.add_argument("--check", required=False)               # Check current version against available version from vendor (e.g. BIOS)
+parser.add_argument("--model", required=False)               # Specify model (can be used with --avail)
+parser.add_argument("--port", required=False)                # Specify port to run service on
+parser.add_argument("--power", required=False)               # Set power state (on, off, reset)
+parser.add_argument("--hostname", required=False)            # Set hostname
+parser.add_argument("--gateway", required=False)             # Set gateway
+parser.add_argument("--netmask", required=False)             # Set netmask
+parser.add_argument("--outlet", required=False)              # Set netmask
+parser.add_argument("--domainname", required=False)          # Set dommainname
+parser.add_argument("--primarydns", required=False)          # Set primary DNS
+parser.add_argument("--secondarydns", required=False)        # Set secondary DNS
+parser.add_argument("--primarysyslog", required=False)       # Set primary Syslog
+parser.add_argument("--secondarysyslog", required=False)     # Set secondary Syslog
+parser.add_argument("--syslogport", required=False)          # Set Syslog port
+parser.add_argument("--primaryntp", required=False)          # Set primary NTP
+parser.add_argument("--secondaryntp", required=False)        # Set secondary NTP 
+parser.add_argument("--meshcmd", required=False)             # Run Meshcmd
+parser.add_argument("--group", required=False)               # Set group
+parser.add_argument("--parameter", required=False)           # Set parameter
+parser.add_argument("--value", required=False)               # Set value
+parser.add_argument("--boot", required=False)                # Set boot device
+parser.add_argument("--set", action='store_true')            # Set value
+parser.add_argument("--kill", action='store_true')           # Stop existing session
+parser.add_argument("--version", action='store_true')        # Display version
+parser.add_argument("--insecure", action='store_true')       # Use HTTP/Telnet
+parser.add_argument("--verbose", action='store_true')        # Enable verbose output
+parser.add_argument("--debug", action='store_true')          # Enable debug output
+parser.add_argument("--mask", action='store_true')           # Mask serial and hostname output output
+parser.add_argument("--meshcommander", action='store_true')  # Use Meshcommander
+parser.add_argument("--meshcentral", action='store_true')    # Use Meshcentral
+parser.add_argument("--options", action='store_true')        # Display options information
+parser.add_argument("--allhosts", action='store_true')       # Automate via .goatpass
+parser.add_argument("--sol", action='store_true')            # Start a SOL connection to host
+parser.add_argument("--download", action='store_true')       # Download BIOS
 
 option = vars(parser.parse_args())
 
@@ -186,7 +186,7 @@ option = vars(parser.parse_args())
 def print_version(script_exe):
   file_array = file_to_array(script_exe)
   version    = list(filter(lambda x: re.search(r"^# Version", x), file_array))[0].split(":")[1]
-  version    = re.sub(r"\s+","",version)
+  version    = re.sub(r"\s+", "", version)
   print(version)
 
 # Print options
@@ -197,23 +197,23 @@ def print_options(script_exe):
   print("\nOptions:\n")
   for line in opts_array:
     line = line.rstrip()
-    if re.search(r"#",line):
+    if re.search(r"#", line):
       option = line.split('"')[1]
       info   = line.split("# ")[1]
       if len(option) < 8:
-        string = "%s\t\t\t%s" % (option,info)
+        string = "%s\t\t\t%s" % (option, info)
       else:
         if len(option) < 16:
-          string = "%s\t\t%s" % (option,info)
+          string = "%s\t\t%s" % (option, info)
         else:
-          string = "%s\t%s" % (option,info)
+          string = "%s\t%s" % (option, info)
       print(string)
   print("\n")
 
 # Check IP
 
 def check_valid_ip(ip):
-  if not re.search(r"[a-z]",ip):
+  if not re.search(r"[a-z]", ip):
     try:
       socket.inet_pton(socket.AF_INET, ip)
     except AttributeError:
@@ -261,8 +261,8 @@ def verify_password(stored_password, provided_password):
 
 def download_file(link, file):
   if not os.path.exists(file):
-    string = "Downloading %s to %s" % (link,file)
-    wget.download(link,file)
+    string = "Downloading %s to %s" % (link, file)
+    wget.download(link, file)
   return
 
 # Get AMT value from web
@@ -271,22 +271,22 @@ def get_web_amt_value(avail, model, driver, download):
   if avail == "bios":
     found    = False
     base_url = "https://downloadcenter.intel.com"
-    full_url = "%s/search?keyword=%s" % (base_url,model)
+    full_url = "%s/search?keyword=%s" % (base_url, model)
     driver.get(full_url)
     html_doc  = driver.page_source
-    html_doc  = BeautifulSoup(html_doc,features='lxml')
+    html_doc  = BeautifulSoup(html_doc, features='lxml')
     html_data = html_doc.find_all('td')
     for html_line in html_data:
       html_text = str(html_line)
       if debug_mode == True:
         handle_output(html_text)
-      if re.search("BIOS Update",html_text):
-        link_stub = BeautifulSoup(html_text,features='lxml').a.get("href")
-        bios_url  = "%s/%s" % (base_url,link_stub)
+      if re.search("BIOS Update", html_text):
+        link_stub = BeautifulSoup(html_text, features='lxml').a.get("href")
+        bios_url  = "%s/%s" % (base_url, link_stub)
         found = True
-      if re.search("Latest",html_text) and found == True:
-        version = BeautifulSoup(html_text,features='lxml').get_text()
-        version = re.sub("Latest","",version)
+      if re.search("Latest", html_text) and found == True:
+        version = BeautifulSoup(html_text, features='lxml').get_text()
+        version = re.sub("Latest", "", version)
         string  = "Available version:  %s" % (version)
         handle_output(string)
         string  = "BIOS Download link: %s" % (bios_url)
@@ -295,12 +295,12 @@ def get_web_amt_value(avail, model, driver, download):
           from selenium.webdriver.common.by import By
           driver.get(bios_url)    
           html   = driver.page_source
-          html   = BeautifulSoup(html,features='lxml')
+          html   = BeautifulSoup(html, features='lxml')
           html   = html.findAll("a", text=re.compile(r"\.bio"))[0]
           html   = str(html)
           link   = html.split('"')[3]
           file   = os.path.basename(link)
-          download_file(link,file)
+          download_file(link, file)
         driver.quit()
         return version
     driver.quit()
@@ -310,8 +310,8 @@ def get_web_amt_value(avail, model, driver, download):
 
 def handle_output(output):
   if mask_mode == True:
-    if re.search(r"serial|address|host|id",output.lower()):
-      if re.search(":",output):
+    if re.search(r"serial|address|host|id", output.lower()):
+      if re.search(":", output):
         param  = output.split(":")[0]
         output = "%s: XXXXXXXX" % (param)
   print(output)
@@ -321,12 +321,12 @@ def handle_output(output):
 
 def get_amt_value(get_value, ip, username, password, driver, http_proto, search):
   sub_value = ""
-  if not re.search(r"[A-Z]|[a-z]|[0-9]",search):
+  if not re.search(r"[A-Z]|[a-z]|[0-9]", search):
     search = ""
   if get_value == "bios":
     get_value = "system"
     sub_value = "bios"
-    if not re.search(r"[A-Z]|[a-z]|[0-9]",search):
+    if not re.search(r"[A-Z]|[a-z]|[0-9]", search):
       search    = "Version"
   if get_value == "model":
     get_value = "system"
@@ -338,32 +338,32 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
     port_no = "16992"
   else:
     port_no = "16993"
-  base_url = "%s://%s:%s@%s:%s" % (http_proto,username,password,ip,port_no)
+  base_url = "%s://%s:%s@%s:%s" % (http_proto, username, password, ip, port_no)
   full_url = "%s/index.htm" % (base_url)
-  if re.search("model|version|serial|release|system",get_value):
+  if re.search("model|version|serial|release|system", get_value):
     full_url = "%s/hw-sys.htm" % (base_url)
-  if re.search("disk",get_value):
+  if re.search("disk", get_value):
     full_url = "%s/hw-disk.htm" % (base_url)
-  if re.search("network",get_value):
+  if re.search("network", get_value):
     full_url = "%s/ip.htm" % (base_url)
-  if re.search("memory",get_value):
+  if re.search("memory", get_value):
     full_url = "%s/hw-mem.htm" % (base_url)
-  if re.search(r"events|fqdn",get_value):
-    full_url = "%s/%s.htm" % (base_url,get_value)
-  if re.search("remote|power",get_value):
+  if re.search(r"events|fqdn", get_value):
+    full_url = "%s/%s.htm" % (base_url, get_value)
+  if re.search("remote|power", get_value):
     full_url  = "%s/remote.htm" % (base_url)
-    get_value = re.sub("power","state",get_value)
-  if re.search("processor|cpu|socket|family|manufacturer|speed",get_value):
+    get_value = re.sub("power", "state", get_value)
+  if re.search("processor|cpu|socket|family|manufacturer|speed", get_value):
     full_url  = "%s/hw-proc.htm" % (base_url)
-    get_value = re.sub("cpu","version",get_value)
+    get_value = re.sub("cpu", "version", get_value)
   if verbose_mode == True:
     string = "Information:\tConnecting to: %s" % (full_url)
     handle_output(string)
   driver.get(full_url)
   html_doc  = driver.page_source
-  html_doc  = BeautifulSoup(html_doc,features='lxml')
-  html_data = html_doc.find_all('td','maincell')
-  if re.search(r"state",get_value):
+  html_doc  = BeautifulSoup(html_doc, features='lxml')
+  html_data = html_doc.find_all('td', 'maincell')
+  if re.search(r"state", get_value):
     html_data = str(html_data).split("<td>")
   else:
     html_data = str(html_data).split("<tr>")
@@ -371,44 +371,44 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
   for html_line in html_data:
     temp_data = html_line.split("\n")
     for temp_line in temp_data:
-      if not re.search("hidden",temp_line):
+      if not re.search("hidden", temp_line):
         new_data.append(temp_line)
   html_data = new_data
   results   = []
-  if re.search("processor|system|memory|disk|event|fqdn|network",get_value):
+  if re.search("processor|system|memory|disk|event|fqdn|network", get_value):
     temp_data = []
     counter   = 0
     for html_line in html_data:
       html_text  = str(html_line)
       if debug_mode == True:
         handle_output(html_text)
-      if not re.search(r"hidden|onclick|colspan",html_text):
-        html_text  = re.sub(r"^\<\/td\>","",html_text)
-        html_text  = re.sub(r"\<br\/\>",",",html_text)
-        plain_text = BeautifulSoup(html_text,features='lxml').get_text()
-        plain_text = re.sub(r"\s+"," ",plain_text)
-        plain_text = re.sub(r"^ | $","",plain_text)
-        if re.search("event",get_value):
-          if re.search("border=",html_text):
+      if not re.search(r"hidden|onclick|colspan", html_text):
+        html_text  = re.sub(r"^\<\/td\>", "", html_text)
+        html_text  = re.sub(r"\<br\/\>", ",", html_text)
+        plain_text = BeautifulSoup(html_text, features='lxml').get_text()
+        plain_text = re.sub(r"\s+", " ", plain_text)
+        plain_text = re.sub(r"^ | $", "", plain_text)
+        if re.search("event", get_value):
+          if re.search("border=", html_text):
             if counter == 5:
               temp_data.append(plain_text)
             else:
               temp_text = (",").join(temp_data)
-              if re.search(r"[A-Z]|[a-z]|[0-9]",plain_text):
+              if re.search(r"[A-Z]|[a-z]|[0-9]", plain_text):
                 results.append(temp_text)
                 temp_data = []
               temp_data.append(plain_text)
           else:
-            if re.search(r"[A-Z]|[a-z]|[0-9]",plain_text):
+            if re.search(r"[A-Z]|[a-z]|[0-9]", plain_text):
               temp_data.append(plain_text)
         else:
-          if re.search(r"\<\/h1\>|\<\/h2\>",html_text):
+          if re.search(r"\<\/h1\>|\<\/h2\>", html_text):
             results.append(plain_text)
           else:
-            if re.search(r"\<\/p\>",html_text):
-              if re.search("checkbox",html_text):
+            if re.search(r"\<\/p\>", html_text):
+              if re.search("checkbox", html_text):
                 param = plain_text
-                if re.search("checked",html_text):
+                if re.search("checked", html_text):
                   value = "Yes"
                 else:
                   value = "No"
@@ -416,51 +416,51 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
                 param = plain_text
                 html  = html_data[counter+1]
                 html  = str(html)
-                html  = re.sub(r"^\<\/td\>","",html)
-                text  = BeautifulSoup(html,features='lxml').get_text()
-                if re.search("value=",html) and not re.search(r"[A-Z]|[a-z]|[0-9]",text):
+                html  = re.sub(r"^\<\/td\>", "", html)
+                text  = BeautifulSoup(html, features='lxml').get_text()
+                if re.search("value=", html) and not re.search(r"[A-Z]|[a-z]|[0-9]", text):
                   value = html.split('"')[-2]
                 else:
                   value = text
-                if not re.search(r"[A-Z]|[a-z]|[0-9]",value):
+                if not re.search(r"[A-Z]|[a-z]|[0-9]", value):
                   html = html_data[counter+2]
                   html = str(html)
-                  html = re.sub(r"^\<\/td\>","",html)
-                  text = BeautifulSoup(html,features='lxml').get_text()
-                  if re.search("value=",html) and not re.search(r"[A-Z]|[a-z]|[0-9]",text):
+                  html = re.sub(r"^\<\/td\>", "", html)
+                  text = BeautifulSoup(html, features='lxml').get_text()
+                  if re.search("value=", html) and not re.search(r"[A-Z]|[a-z]|[0-9]", text):
                     value = html.split('"')[-2]
                   else:
                     value = text
-              plain_text = "%s: %s" % (param,value)
-              plain_text = re.sub("::",":",plain_text)
-              plain_text = re.sub(r"\s+$","",plain_text)
-              plain_text = re.sub(r":$","",plain_text)
-              if re.search(r"[A-Z]|[a-z]|[0-9]",plain_text):
+              plain_text = "%s: %s" % (param, value)
+              plain_text = re.sub("::", ":", plain_text)
+              plain_text = re.sub(r"\s+$", "", plain_text)
+              plain_text = re.sub(r":$", "", plain_text)
+              if re.search(r"[A-Z]|[a-z]|[0-9]", plain_text):
                 results.append(plain_text)
       counter = counter+1
-  if re.search("processor|system|memory|disk|event|fqdn|network",get_value):
+  if re.search("processor|system|memory|disk|event|fqdn|network", get_value):
     found = False
     for result in results:
       if debug_mode == True:
         handle_output(result)
-      if re.search(r"[a-z]",sub_value):
-        if re.search(sub_value,result.lower()):
+      if re.search(r"[a-z]", sub_value):
+        if re.search(sub_value, result.lower()):
           found = True
-        if re.search(r"[A-Z]|[a-z]|[0-9]",search):
-          if re.search(search,result) and found == True:
+        if re.search(r"[A-Z]|[a-z]|[0-9]", search):
+          if re.search(search, result) and found == True:
             handle_output(result)
-            if re.search(r":",result):
+            if re.search(r":", result):
               result = result.split(": ")[1]
             return(result)
         else:
-          if re.search(sub_value,result.lower()):
+          if re.search(sub_value, result.lower()):
             handle_output(result)
-            if re.search(r":",result):
+            if re.search(r":", result):
               result = result.split(": ")[1]
             return(result)
       else:
-        if re.search(r"[A-Z]|[a-z]|[0-9]",search):
-          if re.search(search,result):
+        if re.search(r"[A-Z]|[a-z]|[0-9]", search):
+          if re.search(search, result):
             handle_output(result)
         else:
           handle_output(result)
@@ -474,10 +474,10 @@ def set_amt_value(ip, username, password, driver, http_proto, hostname, dommainn
     port_no = "16992"
   else:
     port_no = "16993"
-  base_url = "%s://%s:%s@%s:%s" % (http_proto,username,password,ip,port_no)
-  if re.search(r"[a-z]",hostname) or (r"[a-z]",domainname):
+  base_url = "%s://%s:%s@%s:%s" % (http_proto, username, password, ip, port_no)
+  if re.search(r"[a-z]", hostname) or (r"[a-z]", domainname):
     full_url = "%s/fqdn.htm" % (base_url)
-    if re.search(r"[a-z]",hostname):
+    if re.search(r"[a-z]", hostname):
       search = "HostName"
       driver.get(full_url)
       from selenium.webdriver.common.by import By
@@ -487,7 +487,7 @@ def set_amt_value(ip, username, password, driver, http_proto, hostname, dommainn
       string = "Information:\tSetting Hostname to %s" % (hostname)
       handle_output(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
-    if re.search(r"[a-z]",domainname):
+    if re.search(r"[a-z]", domainname):
       search = "DomainName"
       driver.get(full_url)
       from selenium.webdriver.common.by import By
@@ -497,9 +497,9 @@ def set_amt_value(ip, username, password, driver, http_proto, hostname, dommainn
       string = "Information:\tSetting Domainname to %s" % (domainname)
       handle_output(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
-  if re.search(r"[a-z,0-9]",primarydns) or (r"[a-z,0-9]",secondarydns):
+  if re.search(r"[a-z,0-9]", primarydns) or (r"[a-z,0-9]", secondarydns):
     full_url = "%s/ip.htm" % (base_url)
-    if re.search(r"[a-z,0-9]",primarydns):
+    if re.search(r"[a-z,0-9]", primarydns):
       search = "DNSServer"
       driver.get(full_url)
       from selenium.webdriver.common.by import By
@@ -509,7 +509,7 @@ def set_amt_value(ip, username, password, driver, http_proto, hostname, dommainn
       string = "Information:\tSetting Primary DNS to %s" % (primarydns)
       handle_output(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
-    if re.search(r"[a-z,0-9]",secondarydns):
+    if re.search(r"[a-z,0-9]", secondarydns):
       search = "AlternativeDns"
       driver.get(full_url)
       from selenium.webdriver.common.by import By
@@ -519,13 +519,13 @@ def set_amt_value(ip, username, password, driver, http_proto, hostname, dommainn
       string = "Information:\tSetting Secondary DNS to %s" % (secondarydns)
       handle_output(string)
       driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
-  if re.search(r"[a-z]",power):
+  if re.search(r"[a-z]", power):
     full_url = "%s/remote.htm" % (base_url)
-    if re.search(r"off",power):
+    if re.search(r"off", power):
       driver.find_element_by_xpath('//input[@value="1"]').click()
-    if re.search(r"cycle",power):
+    if re.search(r"cycle", power):
       driver.find_element_by_xpath('//input[@value="3"]').click()
-    if re.search(r"reset",power):
+    if re.search(r"reset", power):
       driver.find_element_by_xpath('//input[@value="4"]').click()
     driver.get(full_url)
     from selenium.webdriver.common.by import By
@@ -534,7 +534,7 @@ def set_amt_value(ip, username, password, driver, http_proto, hostname, dommainn
     object = driver.switch_to.alert
     time.sleep(2)
     object.accept()
-    string = "Information:\tSending power %s to %s (Intel AMT has a 30s pause before operation is done)" % (power,ip)
+    string = "Information:\tSending power %s to %s (Intel AMT has a 30s pause before operation is done)" % (power, ip)
     handle_output(string)
   driver.quit()
   return
@@ -543,7 +543,7 @@ def set_amt_value(ip, username, password, driver, http_proto, hostname, dommainn
 
 def compare_versions(bios, avail, oob_type):
   if oob_type == "amt":
-    if re.search(".",bios):
+    if re.search(".", bios):
       current = bios.split(".")[2]
     if avail > current:
       handle_output("Information:\tNewer version of BIOS available")
@@ -571,9 +571,9 @@ def check_local_config():
   pkg_dir  = "/usr/local/bin"
   brew_bin = "%s/brew" % (pkg_dir)
   output = get_console_output("uname -a")
-  if re.search("Darwin",output):
+  if re.search("Darwin", output):
     for pkg_name in pkg_list:
-      pkg_bin = "%s/%s" % (pkg_dir,pkg_name)
+      pkg_bin = "%s/%s" % (pkg_dir, pkg_name)
       if not os.path.exists(pkg_bin):
         command = "%s install %s" % (brew_bin, pkg_name)
         output  = get_console_output(command)
@@ -583,15 +583,15 @@ def check_local_config():
 
 def check_mesh_config(mesh_bin):
   l_mesh_dir = "./%s" % (mesh_bin)
-  l_mesh_bin = "./%s/%s" % (mesh_bin,mesh_bin)
+  l_mesh_bin = "./%s/%s" % (mesh_bin, mesh_bin)
   g_mesh_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
-  g_mesh_bin = "/usr/local/lib/node_modules/%s/%s" % (mesh_bin,mesh_bin)
-  l_node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
+  g_mesh_bin = "/usr/local/lib/node_modules/%s/%s" % (mesh_bin, mesh_bin)
+  l_node_dir = "./%s/node_modules/%s" % (mesh_bin, mesh_bin)
   g_node_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
   if not os.path.exists(l_mesh_bin) and not os.path.exists(g_mesh_bin):
     if not os.path.exists(l_mesh_dir):
       os.mkdir(l_mesh_dir)
-      command = "cd %s ; npm install %s" % (l_mesh_dir,mesh_bin)
+      command = "cd %s ; npm install %s" % (l_mesh_dir, mesh_bin)
       output  = get_console_output(command)
       if verbose_mode == True:
          handle_output(output)
@@ -600,14 +600,14 @@ def check_mesh_config(mesh_bin):
 # Start MeshCommander
 
 def start_mesh(mesh_bin, mesh_port):
-  l_node_dir = "./%s/node_modules/%s" % (mesh_bin,mesh_bin)
+  l_node_dir = "./%s/node_modules/%s" % (mesh_bin, mesh_bin)
   g_node_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
   if os.path.exists(l_node_dir):
-    command = "cd %s ; node %s --port %s" % (l_node_dir,mesh_bin,mesh_port)
+    command = "cd %s ; node %s --port %s" % (l_node_dir, mesh_bin, mesh_port)
     os.system(command)
   else:
     if os.path.exists(g_node_dir):
-      command = "cd %s ; node %s --port %s" % (g_node_dir,mesh_bin,mesh_port)
+      command = "cd %s ; node %s --port %s" % (g_node_dir, mesh_bin, mesh_port)
       os.system(command)
     else:
       string = "%s not installed" % (mesh_bin)
@@ -616,9 +616,9 @@ def start_mesh(mesh_bin, mesh_port):
 
 def get_ips():
   ips = []
-  pass_file = "%s/.%s" % (home_dir,password_db)
+  pass_file = "%s/.%s" % (home_dir, password_db)
   if os.path.exists(pass_file):
-    file = open(pass_file,"r")
+    file = open(pass_file, "r")
     data = file.readlines()
     for line in data:
       line.rstrip()
@@ -630,9 +630,9 @@ def get_ips():
 
 def get_username(ip):
   username  = default_user
-  pass_file = "%s/.%s" % (home_dir,password_db)
-  if os.path.exists(pass_file) and re.search(r"[a-z]|[0-9]",ip):
-    file = open(pass_file,"r")
+  pass_file = "%s/.%s" % (home_dir, password_db)
+  if os.path.exists(pass_file) and re.search(r"[a-z]|[0-9]", ip):
+    file = open(pass_file, "r")
     data = file.readlines()
     for line in data:
       line.rstrip()
@@ -647,16 +647,16 @@ def get_username(ip):
 
 def get_password(ip, username):
   password  = ""
-  pass_file = "%s/.%s" % (home_dir,password_db)
+  pass_file = "%s/.%s" % (home_dir, password_db)
   prompt    = "Password for %s:" % (ip)
   if os.path.exists(pass_file):
-    file = open(pass_file,"r")
+    file = open(pass_file, "r")
     data = file.readlines()
     for line in data:
       line.rstrip()
-      (file_ip,file_user,file_pass) = line.split(":")
+      (file_ip, file_user, file_pass) = line.split(":")
       if file_ip == ip and file_user == username:
-        if re.search(r"[A-Z]|[a-z]|[0-9]",file_pass):
+        if re.search(r"[A-Z]|[a-z]|[0-9]", file_pass):
           return file_pass
         else:
           password = getpass.getpass(prompt=prompt, stream=None)
@@ -669,9 +669,9 @@ def get_password(ip, username):
 
 def sol_to_host(ip, username, password, oob_type):
   if oob_type == "amt":
-    command = "export AMT_PASSWORD=\"%s\" ; amtterm %s" % (password,ip)
+    command = "export AMT_PASSWORD=\"%s\" ; amtterm %s" % (password, ip)
   else:
-    command = "ipmitool -I lanplus -U %s -P %s -H %s sol activate" % (username,password,ip)
+    command = "ipmitool -I lanplus -U %s -P %s -H %s sol activate" % (username, password, ip)
   if verbose_mode == True:
     string = "Executing:\t%s" % (command)
     handle_output(string)
@@ -694,42 +694,42 @@ def start_web_driver():
 
 def mesh_command(ip, command, meshcmd, meshcmd_bin):
   if not os.path.exists(meshcmd_bin):
-    uname_arch  = subprocess.check_output("uname",shell=True)
+    uname_arch  = subprocess.check_output("uname", shell=True)
     if uname == "Darwin":
       return
     else:
       if uname == "Linux":
         os_name   = "linux"
         if re.search(r"i386|x86", uname_arch):
-          if re.seach(r"64",uname_arch):
+          if re.seach(r"64", uname_arch):
             os_arch = "x86_64"
           else:
             os_arch = "i386"
         else:
-          if re.seach(r"64",uname_arch):
+          if re.seach(r"64", uname_arch):
             os_arch = "arm64"
           else:
             os_arch = "arm"
-        fetch_bin = "meshcmd_%s_%s" % (os_name,os_arch) 
+        fetch_bin = "meshcmd_%s_%s" % (os_name, os_arch) 
       else:
         os_name   = "win"
-        fetch_bin = "meshcmd_%s_%s.exe" % (os_name,os_arch) 
-    uname_arch  = subprocess.check_output("uname -m",shell=True)
+        fetch_bin = "meshcmd_%s_%s.exe" % (os_name, os_arch) 
+    uname_arch  = subprocess.check_output("uname -m", shell=True)
     meshcmd_url = "https://github.com/lateralblast/goat/blob/master/meshcmd/%s?raw=true" % (fetch_bin)
-    download_file(meshcmd_url,meshcmd_bin)
+    download_file(meshcmd_url, meshcmd_bin)
     command = "chmod +x %s" % (meshcmd_bin)
     os.system(command)
   if meshcmd == "help":
     command = "%s" % (meshcmd_bin)
   else:
-    if re.search(r"[0-9]",ip):
+    if re.search(r"[0-9]", ip):
       status = check_ping(ip)
       if not status == False:
         username = get_username(ip)
-        password = get_password(ip,username)
-        command  = "sudo %s %s --host %s --host %s --user %s --pass %s" % (meshcmd_bin,meshcmd,ip,username,password)
+        password = get_password(ip, username)
+        command  = "sudo %s %s --host %s --host %s --user %s --pass %s" % (meshcmd_bin, meshcmd, ip, username, password)
     else:
-      command  = "sudo %s %s" % (meshcmd_bin,meshcmd)
+      command  = "sudo %s %s" % (meshcmd_bin, meshcmd)
   handle_output(command)
   os.system(command)
   return
@@ -746,7 +746,29 @@ def start_ssh_session(ip, username, password):
 
 # Set specific know iDRAC value
 
-def set_specific_idrac_value(ip, username, password, group, parameter, value)
+def set_specific_idrac_value(ip, username, password, group, parameter, value):
+  ssh_session = start_ssh_session(ip, username, password)
+  if re.search(r"lan|network",group):
+    group = "cfgLanNetworking"
+  if re.search(r"server",group):
+    greoup = "cfgServerInfo"
+  if re.search(r"serial",group):
+    greoup = "cfgSerial"
+  if re.search(r"[A-Z,a-z]", group):
+    command = "racadm set %s %s" % (parameter, value)
+  else:
+    command = "racadm config -g %s -o %s %s" % (group, parameter, value)
+  ssh_session.expect("/admin1-> ")
+  ssh_session.sendline(command)
+  ssh_session.expect("/admin1-> ")
+  output = ssh_session.before
+  output = output.decode()
+  if verbose_mode == True:
+    output = "Executing:\t%s" % (command)
+    handle_output(command)
+    output = "Output:\t\t%s" % (output)
+    handle_output(output)
+  ssh_session.close()
   return
 
 # Get general iDRAC value
@@ -754,56 +776,56 @@ def set_specific_idrac_value(ip, username, password, group, parameter, value)
 def set_idrac_value(ip,username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power):
   commands = []
   ssh_session = start_ssh_session(ip, username, password)
-  if re.search(r"[a-z,0-9]",domainname):
+  if re.search(r"[a-z,0-9]", domainname):
     command = "racadm config -g cfgLanNetworking -o cfgDNSDomainNameFromDHCP 0"
     commands.append(command)
     command = "racadm config -g cfgLanNetworking -o cfgDNSDomainName %s" % (domainname)
     commands.append(command)
-  if re.search(r"[0-9]",netmask):
+  if re.search(r"[0-9]", netmask):
     command = "racadm config -g cfgLanNetworking -o cfgNicNetmask %s" % (netmask)
     commands.append(command)
-  if re.search(r"[0-9]",gateway):
+  if re.search(r"[0-9]", gateway):
     command = "racadm config -g cfgLanNetworking -o cfgNicNetmask %s" % (gateway)
     commands.append(command)
-  if re.search(r"[0-9]",primarydns):
+  if re.search(r"[0-9]", primarydns):
     command = "racadm config -g cfgLanNetworking -o cfgDNSServersFromDHCP 0"
     commands.append(command)
     command = "racadm config -g cfgLanNetworking -o cfgDNSServer1 %s" % (primarydns)
     commands.append(command)
-  if re.search(r"[0-9]",secondarydns):
+  if re.search(r"[0-9]", secondarydns):
     command = "racadm config -g cfgLanNetworking -o cfgDNSServersFromDHCP 0"
     commands.append(command)
     command = "racadm config -g cfgLanNetworking -o cfgDNSServer2 %s" % (secondarydns)
     commands.append(command)
-  if re.search(r"[a-z,0-9]",primaryntp):
+  if re.search(r"[a-z,0-9]", primaryntp):
     command = "racadm config -g cfgLanNetworking -o cfgRhostsNtpEnable 1"
     commands.append(command)
     command = "racadm config -g cfgLanNetworking -o cfgRhostsNtpServer1 %s" % (primaryntp)
     commands.append(command)
-  if re.search(r"[a-z,0-9]",secondaryntp):
+  if re.search(r"[a-z,0-9]", secondaryntp):
     command = "racadm config -g cfgLanNetworking -o cfgRhostsNtpEnable 1"
     commands.append(command)
     command = "racadm config -g cfgLanNetworking -o cfgRhostsNtpServer2 %s" % (secondaryntp)
     commands.append(command)
-  if re.search(r"[a-z,0-9]",primarysyslog):
+  if re.search(r"[a-z,0-9]", primarysyslog):
     command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogEnable 1"
     commands.append(command)
     command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogServer1 %s" % (primarysyslog)
     commands.append(command)
-  if re.search(r"[a-z,0-9]",secondarysyslog):
+  if re.search(r"[a-z,0-9]", secondarysyslog):
     command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogEnable 1"
     commands.append(command)
     command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogServer2 %s" % (secondarysyslog)
     commands.append(command)
-  if re.search(r"[0-9]",syslogport):
+  if re.search(r"[0-9]", syslogport):
     command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogEnable 1"
     commands.append(command)
     command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogPort%s" % (syslogport)
     commands.append(command)
-  if re.search(r"[a-z]",power):
-    power = re.sub(r"on","up",power)
-    power = re.sub(r"off","down",power)
-    if not re.search(r"^power",power):
+  if re.search(r"[a-z]", power):
+    power = re.sub(r"on", "up", power)
+    power = re.sub(r"off", "down", power)
+    if not re.search(r"^power", power):
       power = "power%s" % (power)
     command = "racadm serveraction %s" % (power)
     commands.append(command)
@@ -815,7 +837,7 @@ def set_idrac_value(ip,username, password, hostname, domainname, netmask, gatewa
     output = output.decode()
     if verbose_mode == True:
       output = "Executing:\t%s" % (command)
-      handle_output(output)
+      handle_output(command)
       output = "Output:\t\t%s" % (output)
       handle_output(output)
   ssh_session.close()
@@ -826,7 +848,7 @@ def set_idrac_value(ip,username, password, hostname, domainname, netmask, gatewa
 def get_idrac_value(get_value, ip, username, password):
   ssh_session = start_ssh_session(ip, username, password)
   ssh_session.expect("/admin1-> ")
-  if re.search(r"bios|idrac|usc",get_value.lower()):
+  if re.search(r"bios|idrac|usc", get_value.lower()):
     command = "racadm getversion"
   else:
     command = "racadm getsysinfo"
@@ -840,7 +862,7 @@ def get_idrac_value(get_value, ip, username, password):
   for line in lines:
     line  = line.strip()
     regex = r'\b(?=\w){0}\b(?!\w)'.format(get_value)
-    if re.search(get_value,line,re.IGNORECASE):
+    if re.search(get_value, line, re.IGNORECASE):
       line = re.sub(r" \s+", " ", line)
       handle_output(line)
   return
@@ -848,7 +870,7 @@ def get_idrac_value(get_value, ip, username, password):
 # Get IPMI value
 
 def get_ipmi_value(get_value, ip, username, password):
-  command = "ipmitool -I lanplus -U %s -P %s -H %s %s" % (username,password,ip,get_value)
+  command = "ipmitool -I lanplus -U %s -P %s -H %s %s" % (username, password, ip, get_value)
   handle_output(command)
   os.system(command)
   return
@@ -856,7 +878,7 @@ def get_ipmi_value(get_value, ip, username, password):
 # Set IPMI value
 
 def set_ipmi_value(set_value, ip, username, password):
-  command = "ipmitool -I lanplus -U %s -P %s -H %s %s" % (username,password,ip,set_value)
+  command = "ipmitool -I lanplus -U %s -P %s -H %s %s" % (username, password, ip, set_value)
   handle_output(command)
   os.system(command)
   return
@@ -867,17 +889,17 @@ def java_idrac_kvm(ip, port, username, password, home_dir):
   web_url = "https://%s" % (ip)
   command = "which javaws"
   output  = os.popen(command).read()
-  if not re.search(r"^/",output):
+  if not re.search(r"^/", output):
     output = "Warning:\tNo Java installation found"
     handle_output(output)
     exit()
   xml_file = "/tmp/%s.jnlp" % (ip)
   command  = "uname -a"
   os_name  = os.popen(command).read()
-  if re.search(r"^Darwin",os_name):
+  if re.search(r"^Darwin", os_name):
     command = "java --version"
     version = os.popen(command).read()
-    if re.search(r"Oracle",version):
+    if re.search(r"Oracle", version):
       exceptions = "%s/Library/Application Support/Oracle/Java/Deployment/security/exception.sites" % (home_dir)
       if os.path.exists(exceptions):
         with open(exceptions) as file:
@@ -1018,14 +1040,14 @@ def set_apc_power(power, ip, outlet, username, password):
   if major > 7:
     command = "which docker"
     output  = os.popen(command).read()
-    if not re.search(r"^/",output):
+    if not re.search(r"^/", output):
       output = "Warning:\tNo docker installation found"
       handle_output(output)
       exit()
     string  = "Docker old SHH version tool"
     command = "docker images |grep ostrich"
     output  = os.popen(command).read()
-    if not re.search(r"ostrich",output):
+    if not re.search(r"ostrich", output):
       output = "Information:\tInstalling %s" % (string) 
       handle_output(output)
       with open("/tmp/Dockerfile", 'w') as file:
@@ -1042,9 +1064,9 @@ def set_apc_power(power, ip, outlet, username, password):
         file.write("    container_name: ostrich\n")
         file.write("    entrypoint: /bin/bash\n")
         file.write("    working_dir: /root\n")
-    command = "docker run -it ostrich /bin/bash -c \"ssh %s %s@%s\"" % (ssh_opt,username,ip)
+    command = "docker run -it ostrich /bin/bash -c \"ssh %s %s@%s\"" % (ssh_opt, username, ip)
   else:
-    command = "ssh %s %s@%s" % (ssh_opt,username,ip)
+    command = "ssh %s %s@%s" % (ssh_opt, username, ip)
   #child.expect("")
   #child.sendline("")
   outlet = str(outlet) 
@@ -1094,13 +1116,13 @@ def web_idrac_kvm(ip, port, username, password):
   string  = "Docker iDRAC KVM redirection tool"
   command = "which docker"
   output  = os.popen(command).read()
-  if not re.search(r"^/",output):
+  if not re.search(r"^/", output):
     output = "Warning:\tNo docker installation found"
     handle_output(output)
     exit()
   command = "docker images |grep idrac6"
   output  = os.popen(command).read()
-  if not re.search(r"idrac6",output):
+  if not re.search(r"idrac6", output):
     output = "Information:\tInstalling %s" % (string) 
     handle_output(output)
     command = "docker pull domistyle/idrac6"
@@ -1113,7 +1135,7 @@ def web_idrac_kvm(ip, port, username, password):
   command = "docker ps |grep idrac |awk '{print $1}'"
   process = os.popen(command).read()
   process = process.rstrip()
-  if re.search(r"[0-9]",process):
+  if re.search(r"[0-9]", process):
     output = "Warning:\tInstance of %s already running" % (string)
     handle_output(output)
     if kill_mode == True:
@@ -1125,14 +1147,14 @@ def web_idrac_kvm(ip, port, username, password):
         handle_output(output)
     else:
       exit()
-  command = "docker run -d -p %s:%s -p 5900:5900 -e IDRAC_HOST=%s -e IDRAC_USER=%s -e IDRAC_PASSWORD=%s domistyle/idrac6" % (port,port,ip,username,password)
+  command = "docker run -d -p %s:%s -p 5900:5900 -e IDRAC_HOST=%s -e IDRAC_USER=%s -e IDRAC_PASSWORD=%s domistyle/idrac6" % (port, port, ip, username, password)
   if verbose_mode == True:
     output = "Executing:\t%s" % (command)
     handle_output(output)
   output = os.popen(command).read()
   if verbose_mode == True:
     handle_output(output)
-  output = "Information:\tStarting %s at http://127.0.0.1:%s" % (string,port)
+  output = "Information:\tStarting %s at http://127.0.0.1:%s" % (string, port)
   handle_output(output)
   return
 
@@ -1220,7 +1242,7 @@ else:
       username = get_username(ip)
   else:
     if option["type"] and not option["allhosts"]:
-      password = get_password(ip,username)
+      password = get_password(ip, username)
 
 # Handle search switch
 
@@ -1405,7 +1427,7 @@ if option["meshcommander"] or option["meshcentral"]:
   if option["port"]:
     mesh_port = option["port"]
   check_mesh_config(mesh_bin)
-  start_mesh(mesh_bin,mesh_port)
+  start_mesh(mesh_bin, mesh_port)
   exit()
 
 # If option meshcmd is used the type of OOB is AMT
@@ -1429,7 +1451,7 @@ if option["type"]:
         exit()
       else:
         driver = start_web_driver()
-        get_web_amt_value(avail,model,driver,download)
+        get_web_amt_value(avail, model, driver, download)
     else:
       if option["ip"]:
         ips.append(ip)
@@ -1443,69 +1465,72 @@ if option["type"]:
           handle_output(output)
           exit()
   for ip in ips:
-    if re.search(r"amt|idrac|ipmi",oob_type) and option["sol"]:
+    if re.search(r"amt|idrac|ipmi", oob_type) and option["sol"]:
       status = check_ping(ip)
       if not status == False:
-        sol_to_host(ip,username,password,oob_type)
+        sol_to_host(ip, username, password, oob_type)
         exit()    
     if option["allhosts"]:
       username = get_username(ip)
-      password = get_password(ip,username)
+      password = get_password(ip, username)
     if oob_type == "webidrac":
-      web_idrac_kvm(ip,port,username,password)
+      web_idrac_kvm(ip, port, username, password)
     if oob_type == "javaidrac":
-      java_idrac_kvm(ip,port,username,password,home_dir)
+      java_idrac_kvm(ip, port, username, password, home_dir)
     if oob_type == "apc":
       if option['set']:
-        set_apc_power(power,ip,outlet,username,password)
+        set_apc_power(power, ip, outlet, username, password)
     if oob_type == "ipmi":
       status = check_ping(ip)
       if not status == False:
         if option['get']:
-          get_ipmi_value(get_value,ip,username,password)
+          get_ipmi_value(get_value, ip, username, password)
         if option['boot']:
           set_value = "chassis bootparam set bootflag %s" % (boot)
-          set_ipmi_value(set_value,ip,username,password)
+          set_ipmi_value(set_value, ip, username, password)
         if option['power']:
           set_value = "chassis power %s" % (power)
-          set_ipmi_value(set_value,ip,username,password)
+          set_ipmi_value(set_value, ip, username, password)
     if oob_type == "idrac":
       status = check_ping(ip)
       if not status == False:
         if option["get"]:
-          bios = get_idrac_value(get_value,ip,username,password)
+          bios = get_idrac_value(get_value, ip, username, password)
         if option["set"]:
-          set_idrac_value(ip,username,password,hostname,domainname,netmask,gateway,primarydns,secondarydns,primaryntp,secondaryntp,primarysyslog,secondarysyslog,syslogport,power)
+          if re.search(r"[A-Z,a-z]",option["parameter"]):
+            set_specific_idrac_value(ip, username, password, group, parameter, value)
+          else:
+            set_idrac_value(ip, username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power)
     if oob_type == "amt":
       if option["meshcmd"]:
-        mesh_command(ip,password,meshcmd,meshcmd_bin)
+        mesh_command(ip, password, meshcmd, meshcmd_bin)
       else:
         driver = start_web_driver()
       if option["check"]:
         status = check_ping(ip)
         if not status == False:
-          model   = get_amt_value("model",ip,username,password,driver,http_proto,search)
-          current = get_amt_value(check,ip,username,password,driver,http_proto,search)
-          avail   = get_web_amt_value(check,model,driver,download)
-          compare_versions(current,avail,oob_type)
+          model   = get_amt_value("model", ip, username, password, driver, http_proto, search)
+          current = get_amt_value(check, ip, username, password, driver, http_proto, search)
+          avail   = get_web_amt_value(check, model, driver, download)
+          compare_versions(current, avail, oob_type)
       if option["avail"]:
         if not option["model"]:
           status = check_ping(ip)
           if not status == False:
             username = get_username(ip)
-            password = get_password(ip,username)
-            model = get_amt_value("model",ip,username,password,driver,http_proto,search)
-            get_web_amt_value(avail,model,driver,download)
+            password = get_password(ip, username)
+            model = get_amt_value("model", ip, username, password, driver, http_proto, search)
+            get_web_amt_value(avail, model, driver, download)
         else:
-          get_web_amt_value(avail,model,driver,download)
+          get_web_amt_value(avail, model, driver, download)
       if option["get"]:
         status = check_ping(ip)
         if not status == False:
-          get_amt_value(get_value,ip,username,password,driver,http_proto,search)
+          get_amt_value(get_value, ip, username, password, driver, http_proto, search)
       if option["set"]:
         status = check_ping(ip)
         if not status == False:
-          set_amt_value(ip,username,password,driver,http_proto,hostname,domainname,primarydns,secondarydns,power)
+          set_amt_value(ip, username, password, driver, http_proto, hostname, domainname, primarydns, secondarydns, power)
 else:
   handle_output("Warning:\tNo OOB type specified")
   exit()

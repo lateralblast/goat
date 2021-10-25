@@ -88,3 +88,7 @@
 # Replaced paramiko SSH client with pexpect due to issues
 # 0.4.4: Mon 25 Oct 2021 17:50:11 AEDT
 # Added group, parameter and values switch for setting specific iDRAC values
+# 0.4.5: Mon 25 Oct 2021 19:54:09 AEDT
+# Code cleanup
+# 0.4.6: Mon 25 Oct 2021 20:31:28 AEDT
+# Added code to set specific iDRAC values
