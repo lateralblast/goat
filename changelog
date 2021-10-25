@@ -84,3 +84,5 @@
 # Fixed bug with meshcommander install
 # 1.4.2: Tue 15 Sep 2020 14:34:56 AEST
 # Updated meshcmd code
+# 1.4.3: Mon 25 Oct 2021 17:15:52 AEDT
+# Replaced paramiko SSH client with pexpect due to issues

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.4.2
+# Version:      0.4.3
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -731,13 +731,21 @@ def mesh_command(ip,command,meshcmd,meshcmd_bin):
   os.system(command)
   return
 
+# Initiate SSH Session
+
+def start_ssh_session(ip,username,password):
+  ssh_command = "ssh -o StrictHostKeyChecking=no"
+  ssh_command = "%s %s@%s" % (ssh_command, username, ip)
+  ssh_session = pexpect.spawn(ssh_command)
+  ssh_session.expect("assword: ")
+  ssh_session.sendline(password)
+  return ssh_session
+
 # Get iDRAC value
 
 def set_idrac_value(ip,username,password,hostname,domainname,netmask,gateway,primarydns,secondarydns,primaryntp,secondaryntp,primarysyslog,secondarysyslog,syslogport,power):
-  ssh = paramiko.SSHClient()
-  ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-  ssh.connect(ip, username=username, password=password)
   commands = []
+  ssh_session = start_ssh_session(ip, username, password)
   if re.search(r"[a-z,0-9]",domainname):
     command = "racadm config -g cfgLanNetworking -o cfgDNSDomainNameFromDHCP 0"
     commands.append(command)
@@ -791,34 +799,42 @@ def set_idrac_value(ip,username,password,hostname,domainname,netmask,gateway,pri
       power = "power%s" % (power)
     command = "racadm serveraction %s" % (power)
     commands.append(command)
+  ssh_session.expect("/admin1-> ")
   for command in commands:
-    stdin,stdout,stderr = ssh.exec_command(command)
+    ssh_session.sendline(command)
+    ssh_session.expect("/admin1-> ")
+    output = ssh_session.before
+    output = output.decode()
     if verbose_mode == True:
       output = "Executing:\t%s" % (command)
       handle_output(output)
-      output = stdout.read().decode('utf-8')
       output = "Output:\t\t%s" % (output)
       handle_output(output)
-  ssh.close()
+  ssh_session.close()
   return
 
 # Get iDRAC value
 
 def get_idrac_value(get_value,ip,username,password):
-  ssh = paramiko.SSHClient()
-  ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-  ssh.connect(ip, username=username, password=password)
+  ssh_session = start_ssh_session(ip, username, password)
+  ssh_session.expect("/admin1-> ")
   if re.search(r"bios|idrac|usc",get_value.lower()):
     command = "racadm getversion"
   else:
     command = "racadm getsysinfo"
-  stdin,stdout,stderr = ssh.exec_command(command)
-  for line in stdout.readlines():
+  ssh_session.sendline(command)
+  ssh_session.expect("/admin1-> ")
+  output = ssh_session.before
+  output = output.decode()
+  ssh_session.sendline("exit")
+  ssh_session.close()
+  lines = output.split("\r\n")
+  for line in lines:
     line  = line.strip()
     regex = r'\b(?=\w){0}\b(?!\w)'.format(get_value)
     if re.search(get_value,line,re.IGNORECASE):
-     handle_output(line)
-  ssh.close()
+      line = re.sub(r" \s+", " ", line)
+      handle_output(line)
   return
 
 # Get IPMI value
@@ -847,18 +863,24 @@ def java_idrac_kvm(ip,port,username,password,home_dir):
     output = "Warning:\tNo Java installation found"
     handle_output(output)
     exit()
-  xml_file   = "/tmp/%s.jnlp" % (ip)
-  exceptions = "%s/Library/Application Support/Oracle/Java/Deployment/security/exception.sites" % (home_dir)
-  if os.path.exists(exceptions):
-    with open(exceptions) as file:
-      if not web_url in file.read():
+  xml_file = "/tmp/%s.jnlp" % (ip)
+  command  = "uname -a"
+  os_name  = os.popen(command).read()
+  if re.search(r"^Darwin",os_name):
+    command = "java --version"
+    version = os.popen(command).read()
+    if re.search(r"Oracle",version):
+      exceptions = "%s/Library/Application Support/Oracle/Java/Deployment/security/exception.sites" % (home_dir)
+      if os.path.exists(exceptions):
+        with open(exceptions) as file:
+          if not web_url in file.read():
+            with open(exceptions, 'a') as file:
+              file.write(web_url)
+              file.write("\n")
+      else:
         with open(exceptions, 'a') as file:
           file.write(web_url)
           file.write("\n")
-  else:
-    with open(exceptions, 'a') as file:
-      file.write(web_url)
-      file.write("\n")
   data = []
   data.append('<?xml version="1.0" encoding="UTF-8"?>')
   string = '<jnlp codebase="%s" spec="1.0+">' % (web_url)
