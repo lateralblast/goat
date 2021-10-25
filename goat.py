@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.4.6
+# Version:      0.4.7
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -165,6 +165,7 @@ parser.add_argument("--group", required=False)               # Set group
 parser.add_argument("--parameter", required=False)           # Set parameter
 parser.add_argument("--value", required=False)               # Set value
 parser.add_argument("--boot", required=False)                # Set boot device
+parser.add_argument("--file", required=False)                # File to read in (e.g. iDRAC values)
 parser.add_argument("--set", action='store_true')            # Set value
 parser.add_argument("--kill", action='store_true')           # Stop existing session
 parser.add_argument("--version", action='store_true')        # Display version
@@ -744,6 +745,34 @@ def start_ssh_session(ip, username, password):
   ssh_session.sendline(password)
   return ssh_session
 
+# Set a list of iDRAC values from a file
+
+def set_specific_idrac_values(ip, username, password, file_array):
+  ssh_session = start_ssh_session(ip, username, password)
+  for line in file_array:
+    items = line.split(",")
+    if len(items) > 2:
+      group = items[0]
+      value = items[2]
+      parameter = items[1]
+    else:
+      group = ""
+      value = items[1]
+      parameter = items[0]
+    command = "racadm config -g %s -o %s %s" % (group, parameter, value)
+    ssh_session.expect("/admin1-> ")
+    ssh_session.sendline(command)
+    ssh_session.expect("/admin1-> ")
+    output = ssh_session.before
+    output = output.decode()
+    if verbose_mode == True:
+      text = "Executing:\t%s" % (command)
+      handle_output(text)
+      text = "Output:\t\t%s" % (output)
+      handle_output(text)
+  ssh_session.close()
+  return
+
 # Set specific know iDRAC value
 
 def set_specific_idrac_value(ip, username, password, group, parameter, value):
@@ -764,10 +793,10 @@ def set_specific_idrac_value(ip, username, password, group, parameter, value):
   output = ssh_session.before
   output = output.decode()
   if verbose_mode == True:
-    output = "Executing:\t%s" % (command)
-    handle_output(command)
-    output = "Output:\t\t%s" % (output)
-    handle_output(output)
+    text = "Executing:\t%s" % (command)
+    handle_output(text)
+    text = "Output:\t\t%s" % (output)
+    handle_output(text)
   ssh_session.close()
   return
 
@@ -836,10 +865,10 @@ def set_idrac_value(ip,username, password, hostname, domainname, netmask, gatewa
     output = ssh_session.before
     output = output.decode()
     if verbose_mode == True:
-      output = "Executing:\t%s" % (command)
-      handle_output(command)
-      output = "Output:\t\t%s" % (output)
-      handle_output(output)
+      text = "Executing:\t%s" % (command)
+      handle_output(text)
+      text = "Output:\t\t%s" % (output)
+      handle_output(text)
   ssh_session.close()
   return
 
@@ -1497,10 +1526,18 @@ if option["type"]:
         if option["get"]:
           bios = get_idrac_value(get_value, ip, username, password)
         if option["set"]:
-          if re.search(r"[A-Z,a-z]",option["parameter"]):
-            set_specific_idrac_value(ip, username, password, group, parameter, value)
+          if not option['file']:
+            if re.search(r"[A-Z,a-z]",option["parameter"]):
+              set_specific_idrac_value(ip, username, password, group, parameter, value)
+            else:
+              set_idrac_value(ip, username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power)
           else:
-            set_idrac_value(ip, username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power)
+            if re.search(r"[A-Z,a-z]",option["file"]):
+              file_name  = option["file"]
+              file_array = file_to_array(file_name)
+              set_specific_idrac_values(ip, username, password, file_array)
+            else:
+              set_idrac_value(ip, username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power)
     if oob_type == "amt":
       if option["meshcmd"]:
         mesh_command(ip, password, meshcmd, meshcmd_bin)

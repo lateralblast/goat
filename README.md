@@ -162,11 +162,12 @@ Examples
 Getting help:
 
 ```
-./goat.py --help
-usage: goat.py [-h] [--ip IP] [--username USERNAME] [--type TYPE] [--get GET] [--password PASSWORD]
-               [--search SEARCH] [--avail AVAIL] [--check CHECK] [--model MODEL] [--port PORT]
-               [--power POWER] [--hostname HOSTNAME] [--gateway GATEWAY] [--netmask NETMASK]
-               [--outlet OUTLET] [--domainname DOMAINNAME] [--primarydns PRIMARYDNS] [--secondarydns SECONDARYDNS] [--primarysyslog PRIMARYSYSLOG] [--secondarysyslog SECONDARYSYSLOG] [--syslogport SYSLOGPORT] [--primaryntp PRIMARYNTP] [--secondaryntp SECONDARYNTP] [--meshcmd MESHCMD] [--boot BOOT] [--set] [--kill] [--version] [--insecure] [--verbose] [--debug] [--mask] [--meshcommander] [--meshcentral] [--options] [--allhosts] [--sol] [--download]
+usage: goat.py [-h] [--ip IP] [--username USERNAME] [--type TYPE] [--get GET] [--password PASSWORD] [--search SEARCH] [--avail AVAIL]
+               [--check CHECK] [--model MODEL] [--port PORT] [--power POWER] [--hostname HOSTNAME] [--gateway GATEWAY] [--netmask NETMASK]
+               [--outlet OUTLET] [--domainname DOMAINNAME] [--primarydns PRIMARYDNS] [--secondarydns SECONDARYDNS] [--primarysyslog PRIMARYSYSLOG]
+               [--secondarysyslog SECONDARYSYSLOG] [--syslogport SYSLOGPORT] [--primaryntp PRIMARYNTP] [--secondaryntp SECONDARYNTP]
+               [--meshcmd MESHCMD] [--group GROUP] [--parameter PARAMETER] [--value VALUE] [--boot BOOT] [--file FILE] [--set] [--kill] [--version]
+               [--insecure] [--verbose] [--debug] [--mask] [--meshcommander] [--meshcentral] [--options] [--allhosts] [--sol] [--download]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -194,7 +195,11 @@ optional arguments:
   --primaryntp PRIMARYNTP
   --secondaryntp SECONDARYNTP
   --meshcmd MESHCMD
+  --group GROUP
+  --parameter PARAMETER
+  --value VALUE
   --boot BOOT
+  --file FILE
   --set
   --kill
   --version
@@ -217,44 +222,49 @@ Getting information about options:
 
 Options:
 
---ip              Specify IP of OOB/Remote Management interface
---username		    Set Username
---type			      Set Type of OOB device
---get			        Get Parameter
---password		    Set Password
---search		      Search output for value
---avail			      Get available version from vendor (e.g. BIOS)
---check			      Check current version against available version from vendor (e.g. BIOS)
---model			      Specify model (can be used with --avail)
---port			      Specify port to run service on
---power			      Set power state (on, off, reset)
---hostname		    Set hostname
---gateway		      Set gateway
---netmask		      Set netmask
---outlet		      Set netmask
---domainname		  Set dommainname
---primarydns		  Set primary DNS
---secondarydns		Set secondary DNS
---primarysyslog		Set primary Syslog
---secondarysyslog	Set secondary Syslog
---syslogport		  Set Syslog port
---primaryntp		  Set primary NTP
---secondaryntp		Set secondary NTP
---meshcmd		      Run Meshcmd
---boot			      Set boot device
---set			        Set value
---kill			      Stop existing session
---version		      Display version
---insecure		    Use HTTP/Telnet
---verbose		      Enable verbose output
---debug			      Enable debug output
---mask			      Mask serial and hostname output output
---meshcommander		Use Meshcommander
---meshcentral		  Use Meshcentral
---options		      Display options information
---allhosts		    Automate via .goatpass
---sol			        Start a SOL connection to host
---download		    Download BIOS
+--ip               Specify IP of OOB/Remote Management interface
+--username         Set Username
+--type             Set Type of OOB device
+--get              Get Parameter
+--password         Set Password
+--search           Search output for value
+--avail            Get available version from vendor (e.g. BIOS)
+--check            Check current version against available version from vendor (e.g. BIOS)
+--model            Specify model (can be used with --avail)
+--port             Specify port to run service on
+--power            Set power state (on, off, reset)
+--hostname         Set hostname
+--gateway          Set gateway
+--netmask          Set netmask
+--outlet           Set netmask
+--domainname       Set dommainname
+--primarydns       Set primary DNS
+--secondarydns     Set secondary DNS
+--primarysyslog    Set primary Syslog
+--secondarysyslog  Set secondary Syslog
+--syslogport       Set Syslog port
+--primaryntp       Set primary NTP
+--secondaryntp     Set secondary NTP
+--meshcmd          Run Meshcmd
+--group            Set group
+--parameter        Set parameter
+--value            Set value
+--boot             Set boot device
+--file             File to read in (e.g. iDRAC values)
+--set              Set value
+--kill             Stop existing session
+--version          Display version
+--insecure         Use HTTP/Telnet
+--verbose          Enable verbose output
+--debug            Enable debug output
+--mask             Mask serial and hostname output output
+--meshcommander    Use Meshcommander
+--meshcentral      Use Meshcentral
+--options          Display options information
+--allhosts         Automate via .goatpass
+--sol              Start a SOL connection to host
+--download         Download BIOS
+
 ```
 
 Intel AMT Examples
@@ -436,14 +446,14 @@ Get BIOS version:
 
 ```
 ./goat.py --type idrac --get bios --ip 192.168.10.211
-Bios Version             = 6.6.0
+Bios Version = 6.6.0
 ```
 
 Get iDRAC version:
 
 ```
 ./goat.py --type idrac --get idrac --ip 192.168.10.211
-iDRAC Version            = 2.92
+iDRAC Version = 2.92
 ```
 
 Get DNS information:
@@ -465,6 +475,22 @@ Power on server:
 
 ```
 ./goat.py --set --power on --type idrac --ip 192.168.10.213 --user root --password XXXXXXXX 
+```
+
+Set iDRAC value:
+
+```
+./goat.py --type idrac --ip 192.168.11.233 --username root --password XXXXXXXX --set --primarysyslog 192.168.11.254
+```
+
+Set multiple iDRAC values from a file:
+
+```
+cat ./test
+cfgLanNetworking,cfgDNSServer1,192.168.11.254
+cfgLanNetworking,cfgDNSServer2,8.8.8.8
+
+./goat.py --type idrac --ip 192.168.11.233 --username root --password XXXXXXXX --set --file test
 ```
 
 IPMI Examples:
