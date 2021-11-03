@@ -94,3 +94,5 @@
 # Added code to set specific iDRAC values
 # 0.4.7: Mon 25 Oct 2021 22:25:47 AEDT
 # Added code to set a list of specific iDRAC values from a file
+# 0.4.8: Wed  3 Nov 2021 14:32:37 AEDT
+# Added dryrun switch

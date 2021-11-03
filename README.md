@@ -270,7 +270,7 @@ Options:
 Intel AMT Examples
 ------------------
 
-Connecting to host over SOL:
+Connecting to Intel AMT device over SOL:
 
 ```
 ./goat.py --ip 192.168.1.171 --sol --type amt
@@ -289,20 +289,20 @@ Ubuntu 18.04.2 LTS inn01 ttyS4
 inn01 login:
 ```
 
-Set hostname:
+Set Intel AMT device hostname:
 
 ```
 ./goat.py --ip 192.168.1.171 --set --hostname ecs01 --type amt
 ```
 
-Get BIOS version:
+Get Intel AMT device BIOS version:
 
 ```
 ./goat.py --ip 192.168.1.171 --get bios --type amt
 Version: DNKBLi5v.86A.0063.2019.0503.1714
 ```
 
-Get available BIOS version for a specific model:
+Get available BIOS version for a specific Intel AMT device model:
 
 ```
 ./goat.py --avail bios --model NUC7i5DNKE --type amt
@@ -310,7 +310,7 @@ Available version:  0063
 BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update-DNKBLi5v-86A-
 ```
 
-Get available BIOS versions for a managed device:
+Get available Intel AMT device BIOS versions for a managed device:
 
 ```
 ./goat.py --ip 192.168.1.171 --avail bios --type amt
@@ -319,7 +319,7 @@ Available version:  0063
 BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update-DNKBLi5v-86A-
 ```
 
-Check current BIOS version against available vendor version:
+Check current Intel AMT device BIOS version against available vendor version:
 
 ```
 ./goat.py --ip 192.168.1.171 --check bios --type amt
@@ -330,7 +330,7 @@ BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update
 Latest version of BIOS installed
 ```
 
-Download BIOS for a specific model:
+Download Intel AMT device BIOS for a specific model:
 
 ```
 ./goat.py --avail bios --model NUC7i5DNKE --type amt --download
@@ -339,7 +339,7 @@ BIOS Download link: https://downloadcenter.intel.com//download/28789/BIOS-Update
 Downloading https://downloadmirror.intel.com/28789/eng/DNi50063.bio to DNi50063.bio
 ```
 
-Reset device:
+Reset Intel AMT device:
 
 ```
 ./goat.py --ip 192.168.1.171 --set --power reset --type amt
@@ -353,7 +353,7 @@ Start MeshCommander:
 MeshCommander running on http://127.0.0.1:3000.
 ```
 
-Get the Memory configuration:
+Get Intel AMT device Memory configuration:
 
 ```
 ./goat.py --ip 192.168.1.171 --get memory --type amt
@@ -376,7 +376,7 @@ Module 4
 Not installed
 ```
 
-Get System information:
+Get Intel AMT device System information:
 
 ```
 ./goat.py --ip 192.168.1.171 --get system --type amt
@@ -400,7 +400,7 @@ Version: DNKBLi5v.86A.0063.2019.0503.1714
 Release date: 05/03/2019
 ```
 
-Get System Event information:
+Get Intel AMT device System Event information:
 
 ```
 $ ./goat.py --ip 192.168.1.171 --get events --type amt
@@ -442,7 +442,7 @@ Start javaws iDRAC KVM session:
 iDRAC SSH control examples
 --------------------------
 
-Get BIOS version:
+Get iDRAC device BIOS version:
 
 ```
 ./goat.py --type idrac --get bios --ip 192.168.10.211
@@ -456,7 +456,7 @@ Get iDRAC version:
 iDRAC Version = 2.92
 ```
 
-Get DNS information:
+Get iDRAC device DNS information:
 
 ```
 ./goat.py --type idrac --get dns --ip 192.168.10.211

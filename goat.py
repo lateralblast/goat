@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.4.7
+# Version:      0.4.8
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -172,6 +172,7 @@ parser.add_argument("--version", action='store_true')        # Display version
 parser.add_argument("--insecure", action='store_true')       # Use HTTP/Telnet
 parser.add_argument("--verbose", action='store_true')        # Enable verbose output
 parser.add_argument("--debug", action='store_true')          # Enable debug output
+parser.add_argument("--dryrun", action='store_true')         # Dry run
 parser.add_argument("--mask", action='store_true')           # Mask serial and hostname output output
 parser.add_argument("--meshcommander", action='store_true')  # Use Meshcommander
 parser.add_argument("--meshcentral", action='store_true')    # Use Meshcentral
@@ -747,8 +748,9 @@ def start_ssh_session(ip, username, password):
 
 # Set a list of iDRAC values from a file
 
-def set_specific_idrac_values(ip, username, password, file_array):
-  ssh_session = start_ssh_session(ip, username, password)
+def set_specific_idrac_values(ip, username, password, file_array, dryrun):
+  if dryrun == False:
+    ssh_session = start_ssh_session(ip, username, password)
   for line in file_array:
     items = line.split(",")
     if len(items) > 2:
@@ -760,23 +762,26 @@ def set_specific_idrac_values(ip, username, password, file_array):
       value = items[1]
       parameter = items[0]
     command = "racadm config -g %s -o %s %s" % (group, parameter, value)
-    ssh_session.expect("/admin1-> ")
-    ssh_session.sendline(command)
-    ssh_session.expect("/admin1-> ")
-    output = ssh_session.before
-    output = output.decode()
-    if verbose_mode == True:
-      text = "Executing:\t%s" % (command)
-      handle_output(text)
-      text = "Output:\t\t%s" % (output)
-      handle_output(text)
-  ssh_session.close()
+    if dryrun == True:
+      print(command) 
+    else:
+      ssh_session.expect("/admin1-> ")
+      ssh_session.sendline(command)
+      ssh_session.expect("/admin1-> ")
+      output = ssh_session.before
+      output = output.decode()
+      if verbose_mode == True:
+        text = "Executing:\t%s" % (command)
+        handle_output(text)
+        text = "Output:\t\t%s" % (output)
+        handle_output(text)
+  if dryrun == False:
+    ssh_session.close()
   return
 
 # Set specific know iDRAC value
 
-def set_specific_idrac_value(ip, username, password, group, parameter, value):
-  ssh_session = start_ssh_session(ip, username, password)
+def set_specific_idrac_value(ip, username, password, group, parameter, value, dryrun):
   if re.search(r"lan|network",group):
     group = "cfgLanNetworking"
   if re.search(r"server",group):
@@ -787,24 +792,27 @@ def set_specific_idrac_value(ip, username, password, group, parameter, value):
     command = "racadm set %s %s" % (parameter, value)
   else:
     command = "racadm config -g %s -o %s %s" % (group, parameter, value)
-  ssh_session.expect("/admin1-> ")
-  ssh_session.sendline(command)
-  ssh_session.expect("/admin1-> ")
-  output = ssh_session.before
-  output = output.decode()
-  if verbose_mode == True:
-    text = "Executing:\t%s" % (command)
-    handle_output(text)
-    text = "Output:\t\t%s" % (output)
-    handle_output(text)
-  ssh_session.close()
+  if dryrun == True:
+    print(command)
+  else:
+    ssh_session = start_ssh_session(ip, username, password)
+    ssh_session.expect("/admin1-> ")
+    ssh_session.sendline(command)
+    ssh_session.expect("/admin1-> ")
+    output = ssh_session.before
+    output = output.decode()
+    if verbose_mode == True:
+      text = "Executing:\t%s" % (command)
+      handle_output(text)
+      text = "Output:\t\t%s" % (output)
+      handle_output(text)
+    ssh_session.close()
   return
 
 # Get general iDRAC value
 
-def set_idrac_value(ip,username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power):
+def set_idrac_value(ip,username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power, dryrun):
   commands = []
-  ssh_session = start_ssh_session(ip, username, password)
   if re.search(r"[a-z,0-9]", domainname):
     command = "racadm config -g cfgLanNetworking -o cfgDNSDomainNameFromDHCP 0"
     commands.append(command)
@@ -858,18 +866,23 @@ def set_idrac_value(ip,username, password, hostname, domainname, netmask, gatewa
       power = "power%s" % (power)
     command = "racadm serveraction %s" % (power)
     commands.append(command)
-  ssh_session.expect("/admin1-> ")
-  for command in commands:
-    ssh_session.sendline(command)
+  if dryrun == True:
+    for command in commands:
+      print(command)
+  else:
+    ssh_session = start_ssh_session(ip, username, password)
     ssh_session.expect("/admin1-> ")
-    output = ssh_session.before
-    output = output.decode()
-    if verbose_mode == True:
-      text = "Executing:\t%s" % (command)
-      handle_output(text)
-      text = "Output:\t\t%s" % (output)
-      handle_output(text)
-  ssh_session.close()
+    for command in commands:
+      ssh_session.sendline(command)
+      ssh_session.expect("/admin1-> ")
+      output = ssh_session.before
+      output = output.decode()
+      if verbose_mode == True:
+        text = "Executing:\t%s" % (command)
+        handle_output(text)
+        text = "Output:\t\t%s" % (output)
+        handle_output(text)
+    ssh_session.close()
   return
 
 # Get iDRAC value
@@ -1186,6 +1199,13 @@ def web_idrac_kvm(ip, port, username, password):
   output = "Information:\tStarting %s at http://127.0.0.1:%s" % (string, port)
   handle_output(output)
   return
+
+# Handle dryrun
+
+if option["dryrun"]:
+  dryrun = True
+else:
+  dryrun = False
 
 # Handle type
 
@@ -1528,16 +1548,16 @@ if option["type"]:
         if option["set"]:
           if not option['file']:
             if re.search(r"[A-Z,a-z]",option["parameter"]):
-              set_specific_idrac_value(ip, username, password, group, parameter, value)
+              set_specific_idrac_value(ip, username, password, group, parameter, value, dryrun)
             else:
-              set_idrac_value(ip, username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power)
+              set_idrac_value(ip, username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power, dryrun)
           else:
             if re.search(r"[A-Z,a-z]",option["file"]):
               file_name  = option["file"]
               file_array = file_to_array(file_name)
-              set_specific_idrac_values(ip, username, password, file_array)
+              set_specific_idrac_values(ip, username, password, file_array, dryrun)
             else:
-              set_idrac_value(ip, username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power)
+              set_idrac_value(ip, username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power, dryrun)
     if oob_type == "amt":
       if option["meshcmd"]:
         mesh_command(ip, password, meshcmd, meshcmd_bin)
