@@ -5,6 +5,8 @@ GOAT
 
 General OOB Automation Tool
 
+Version: 0.4.9
+
 Introduction
 ------------
 

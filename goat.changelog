@@ -96,3 +96,5 @@
 # Added code to set a list of specific iDRAC values from a file
 # 0.4.8: Wed  3 Nov 2021 14:32:37 AEDT
 # Added dryrun switch
+# 0.4.9: Sun 12 Feb 2023 14:29:24 AEDT
+# Improved brew/package detection code

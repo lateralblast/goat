@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.4.8
+# Version:      0.4.9
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -361,7 +361,7 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
   if verbose_mode == True:
     string = "Information:\tConnecting to: %s" % (full_url)
     handle_output(string)
-  driver.get(full_url)
+  alert = driver.get(full_url)
   html_doc  = driver.page_source
   html_doc  = BeautifulSoup(html_doc, features='lxml')
   html_data = html_doc.find_all('td', 'maincell')
@@ -570,10 +570,14 @@ def get_console_output(command):
 
 def check_local_config():
   pkg_list = [ "geckodriver", "amtterm", "npm", "ipmitool" ]
-  pkg_dir  = "/usr/local/bin"
-  brew_bin = "%s/brew" % (pkg_dir)
   output = get_console_output("uname -a")
   if re.search("Darwin", output):
+    if os.path.exists("/usr/local/bin/brew"):
+      pkg_dir  = "/usr/local/bin"
+    else:
+      if os.path.exists("/opt/homebrew/bin/brew"):
+        pkg_dir  = "/opt/homebrew/bin"
+    brew_bin = "%s/brew" % (pkg_dir)
     for pkg_name in pkg_list:
       pkg_bin = "%s/%s" % (pkg_dir, pkg_name)
       if not os.path.exists(pkg_bin):
