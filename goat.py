@@ -151,7 +151,7 @@ parser.add_argument("--power", required=False)               # Set power state (
 parser.add_argument("--hostname", required=False)            # Set hostname
 parser.add_argument("--gateway", required=False)             # Set gateway
 parser.add_argument("--netmask", required=False)             # Set netmask
-parser.add_argument("--outlet", required=False)              # Set netmask
+parser.add_argument("--outlet", required=False)              # Set outlet
 parser.add_argument("--domainname", required=False)          # Set dommainname
 parser.add_argument("--primarydns", required=False)          # Set primary DNS
 parser.add_argument("--secondarydns", required=False)        # Set secondary DNS
@@ -317,6 +317,65 @@ def handle_output(output):
         param  = output.split(":")[0]
         output = "%s: XXXXXXXX" % (param)
   print(output)
+  return
+
+# Set SEP (ServerEdge PDU) value
+
+def set_sep_power(power, ip, outlet, username, password, driver, http_proto):
+  if http_proto == "http":
+    port_no = "80"
+  else:
+    port_no = "443"
+  base_url = "%s://%s:%s@%s:%s" % (http_proto, username, password, ip, port_no)
+  full_url = "%s/outlet.htm" % (base_url)
+  if verbose_mode == True:
+    string = "Information:\tConnecting to: %s" % (full_url)
+    handle_output(string)
+  alert = driver.get(full_url)
+  html_doc = driver.page_source
+  if re.search(r"on", power.lower()):
+    button_id = "T18"
+    button_name = "B5"
+  if re.search(r"off", power.lower()):
+    button_id = "T19"
+    button_name = "B6"
+  if re.search(r"offon|cycle|onoff|reset", power.lower()):
+    button_id = "T21"
+    button_name = "T21"
+  if re.search(r"all", outlet.lower()):
+    check_box_id = "C0"
+    check_box_name = "C0"
+  if re.search(r"a$|1", outlet.lower()):
+    check_box_id = "C11"
+    check_box_name = "C11"
+  if re.search(r"b$|2", outlet.lower()):
+    check_box_id = "C12"
+    check_box_name = "C12"
+  if re.search(r"c$|3", outlet.lower()):
+    check_box_id = "C13"
+    check_box_name = "C13"
+  if re.search(r"d$|4", outlet.lower()):
+    check_box_id = "C14"
+    check_box_name = "C14"
+  if re.search(r"e$|5", outlet.lower()):
+    check_box_id = "C15"
+    check_box_name = "C15"
+  if re.search(r"f$|6", outlet.lower()):
+    check_box_id = "C16"
+    check_box_name = "C16"
+  if re.search(r"g$|7", outlet.lower()):
+    check_box_id = "C17"
+    check_box_name = "C17"
+  if re.search(r"h$|8", outlet.lower()):
+    check_box_id = "C18"
+    check_box_name = "C18"
+  from selenium.webdriver.common.by import By
+  check_box = driver.find_element(By.NAME, check_box_name)
+  check_box.click()
+  power_button = driver.find_element(By.NAME, button_name)
+  power_button.click()
+  alert = driver.switch_to.alert
+  accept = alert.accept()
   return
 
 # Get SEP (ServerEdge PDU) value
@@ -1666,7 +1725,7 @@ if option["type"]:
       if option['set']:
         status = check_ping(ip)
         if not status == False:
-          set_sep_value(get_value, ip, username, password, driver, http_proto, search)
+          set_sep_power(power, ip, outlet, username, password, driver, http_proto)
     if oob_type == "amt":
       if option["meshcmd"]:
         mesh_command(ip, password, meshcmd, meshcmd_bin)

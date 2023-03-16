@@ -102,4 +102,6 @@
 # Added initial support for ServerEdge PDU
 # 0.5.1: Thu 16 Mar 2023 12:06:25 AEDT
 # Added read support for ServerEdge PDU
+# 0.5.2: Thu 16 Mar 2023 16:22:07 AEDT
+# Added outlet power on/off support for ServerEdge PDU
 

@@ -423,7 +423,7 @@ Event Log,Event,Time,Source,Description
 7,5/28/2019,9:59 pm,BIOS,Performing PCI configuration.
 ```
 
-Get Status of ServerEdge switch PDU outlets:
+Get Status of ServerEdge switched PDU outlets:
 
 ```
 ./goat.py --ip 192.168.0.200 --type sep --get outlet
@@ -435,6 +435,12 @@ Outlet E: OFF (0.0)
 Outlet F: OFF (0.0)
 Outlet G: OFF (0.0)
 Outlet H: OFF (0.0)
+```
+
+Set power on for outlet 1/A on ServerEdge switched PDU:
+
+```
+ ./goat.py --ip 192.168.0.200 --type sep --set --outlet A --power on
 ```
 
 iDRAC Web KVM Examples
