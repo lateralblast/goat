@@ -5,7 +5,7 @@ GOAT
 
 General OOB Automation Tool
 
-Version: 0.4.9
+Version: 0.5.1
 
 Introduction
 ------------
@@ -23,6 +23,13 @@ Some features:
 - Remotely reset device
 - Start MeshCommander in order to do other manage tasks (e.g. configure certificates)
 - Start amtterm for connecting to the AMT SOL (requires non TLS/Digest access to be enabled)
+
+Supported Hardware:
+
+- Intel AMT
+- Dell iDRAC
+- APC switched PDU
+- ServerEdge switched PDU
 
 Notes
 -----
@@ -414,6 +421,20 @@ Event Log,Event,Time,Source,Description
 5,5/28/2019,9:59 pm,BIOS,Performing PCI configuration.
 6,5/28/2019,9:59 pm,BIOS,Performing PCI configuration.
 7,5/28/2019,9:59 pm,BIOS,Performing PCI configuration.
+```
+
+Get Status of ServerEdge switch PDU outlets:
+
+```
+./goat.py --ip 192.168.0.200 --type sep --get outlet
+Outlet A: ON  (0.0)
+Outlet B: ON  (0.0)
+Outlet C: OFF (0.0)
+Outlet D: OFF (0.0)
+Outlet E: OFF (0.0)
+Outlet F: OFF (0.0)
+Outlet G: OFF (0.0)
+Outlet H: OFF (0.0)
 ```
 
 iDRAC Web KVM Examples

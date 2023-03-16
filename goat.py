@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.4.9
+# Version:      0.5.1
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -318,6 +318,101 @@ def handle_output(output):
         output = "%s: XXXXXXXX" % (param)
   print(output)
   return
+
+# Get SEP (ServerEdge PDU) value
+
+def get_sep_value(get_value, ip, username, password, driver, http_proto, search):
+  if http_proto == "http":
+    port_no = "80"
+  else:
+    port_no = "443"
+  base_url = "%s://%s:%s@%s:%s" % (http_proto, username, password, ip, port_no)
+  if re.search("outlet|status", get_value):
+    full_url = "%s/status.xml" % (base_url)
+  if re.search("outlet|status", get_value):
+    if verbose_mode == True:
+      string = "Information:\tConnecting to: %s" % (full_url)
+      handle_output(string)
+    alert = driver.get(full_url)
+    html_doc = driver.page_source
+    html_doc = BeautifulSoup(html_doc, features='lxml')
+    html_string = str(html_doc)
+    html_lines  = html_string.split("\n")
+    counter = 1
+    outlet  = "A"
+    for html_line in html_lines:
+      if re.search("pot0", html_line):
+        values = html_line.split(",")
+        while counter < 9:
+          amps   = values[1+counter]
+          status = values[9+counter]
+          if int(status) == 1:
+            status = "ON "
+          else:
+            status = "OFF"
+          string = "Outlet %s: %s (%s)" % (outlet, status, amps)
+          if re.search(r"[a-z]", search.lower()):
+            if search.lower() in string.lower():
+              print(string)
+          else:
+            print(string)
+          outlet = ord(outlet)
+          counter = counter+1
+          outlet = outlet+1
+          outlet = chr(outlet)
+  else:
+    if not re.search(r"[a-z]", search.lower()):
+      search = get_value
+    if re.search("info|output|overload|warning", search):
+      full_url = "%s/index.htm" % (base_url)
+    if re.search("system|firmware|model|mac|systemname|contact|location", search):
+      full_url = "%s/system.htm" % (base_url)
+    if re.search("ssl|snmp|mail|threshold|net$|id|pdu", search):
+      full_url = "%s/config%s.htm" % (base_url, search)
+    if re.search("hostname|ipaddress|gateway|primary|secondary", search):
+      full_url = "%s/confignet.htm" % (base_url)
+    if re.search("receiver", search):
+      full_url = "%s/configsnmp.htm" % (base_url)
+    if verbose_mode == True:
+      string = "Information:\tConnecting to: %s" % (full_url)
+      handle_output(string)
+    alert = driver.get(full_url)
+    html_doc = driver.page_source
+    html_doc = BeautifulSoup(html_doc, features='lxml')
+    if search == "systemname":
+      search = "system name"
+    if search == "ipaddress":
+      search = "ip address"
+    if search == "hostname":
+      search = "host name"
+    if re.search("primary", search):
+      search = "primary dns"
+    if re.search("secondary", search):
+      search = "secondary dns"
+    if re.search("receiver", search):
+      search = "receiver ip"
+    counter = 0
+    html_string = str(html_doc)
+    html_lines  = html_string.split("\n")
+    for html_line in html_lines:
+      if re.search(r"{}".format(search), html_line.lower()) and not re.search("confirm", html_line.lower()):
+        next_line = html_lines[counter+1]
+        if not re.search("value=", next_line):
+          test_line = html_lines[counter+2]
+          if re.search("value=", test_line):
+            next_line = html_lines[counter+2]
+          else:
+            if re.search(r"^\<", next_line):
+              next_line = html_lines[counter+2]
+        if re.search("value=", next_line):
+          value = next_line.split("value=")[1]
+          value = value.split('"')[1]
+        else:
+          html = BeautifulSoup(next_line, features='lxml')
+          value = html.text
+        print(value)
+        return
+      counter = counter+1
 
 # Get AMT value
 
@@ -1562,6 +1657,16 @@ if option["type"]:
               set_specific_idrac_values(ip, username, password, file_array, dryrun)
             else:
               set_idrac_value(ip, username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power, dryrun)
+    if oob_type == "sep":
+      driver = start_web_driver()
+      if option['get']:
+        status = check_ping(ip)
+        if not status == False:
+          get_sep_value(get_value, ip, username, password, driver, http_proto, search)
+      if option['set']:
+        status = check_ping(ip)
+        if not status == False:
+          set_sep_value(get_value, ip, username, password, driver, http_proto, search)
     if oob_type == "amt":
       if option["meshcmd"]:
         mesh_command(ip, password, meshcmd, meshcmd_bin)
