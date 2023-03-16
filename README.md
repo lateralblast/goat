@@ -423,6 +423,9 @@ Event Log,Event,Time,Source,Description
 7,5/28/2019,9:59 pm,BIOS,Performing PCI configuration.
 ```
 
+ServerEdge Switched PDU Examples
+--------------------------------
+
 Get Status of ServerEdge switched PDU outlets:
 
 ```
@@ -522,8 +525,8 @@ cfgLanNetworking,cfgDNSServer2,8.8.8.8
 ./goat.py --type idrac --ip 192.168.11.233 --username root --password XXXXXXXX --set --file test
 ```
 
-IPMI Examples:
---------------
+IPMI Examples
+-------------
 
 Power on device via IPMI:
 
@@ -543,8 +546,8 @@ Get sensor information via IPMI:
 ./goat.py --ip 192.168.1.171 --get sensor --type ipmi
 ```
 
-APC PDU Examples:
------------------
+APC switched PDU Examples
+-------------------------
 
 Power on outlet 1:
 
