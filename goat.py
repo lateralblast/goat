@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.5.1
+# Version:      0.8.8
 # Release:      1
-# License:      CC-BA (Creative Commons By Attribution)
-#               http://creativecommons.org/licenses/by/4.0/legalcode
+# License:      CC BY-NC-SA 4.0 (Creative Commons Attribution-NonCommercial-ShareAlike)
+#               https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 # Group:        System
 # Source:       N/A
 # URL:          N/A
@@ -16,6 +16,7 @@
 # Import modules
 
 import urllib.request
+import urllib.parse
 import subprocess
 import platform
 import argparse
@@ -33,85 +34,67 @@ from os.path import expanduser
 # Set some defaults
 
 verbose_mode = False
+mask_mode    = False
+debug_mode   = False
 mesh_port    = "3000"
 password_db  = "goatpass"
 home_dir     = expanduser("~")
 default_user = "admin"
 
-# Check we have pip installed
+# Python module names that differ from their pip package names
 
-try:
-  from pip._internal import main
-except ImportError:
-  os.system("easy_install pip")
-  os.system("pip install --upgrade pip")
+pip_names = { "bs4": "beautifulsoup4" }
 
 # install and import a python module
 
 def install_and_import(package):
   import importlib
+  import site
   try:
-    importlib.import_module(package)
+    return importlib.import_module(package)
   except ImportError:
-    command = "python3 -m pip install --user %s" % (package)
-    os.system(command)
-  finally:
-    globals()[package] = importlib.import_module(package)
-
-# Load selenium
-
-try:
-  from selenium import webdriver
-except ImportError:
-  install_and_import("selenium")
-  from selenium import webdriver
-
-# Load bs4
-
-try:
-  from bs4 import BeautifulSoup
-except ImportError:
-  install_and_import("bs4")
-  from bs4 import BeautifulSoup
-
-# Load lxml
-
-try:
-  import lxml
-except ImportError:
-  install_and_import("lxml")
-  import lxml
-
-from lxml import etree
-
-# load wget
-
-try:
-  import wget
-except ImportError:
-  install_and_import("wget")
-  import wget
-
-# load paraminko
-
-try:
-  import paramiko
-except ImportError:
-  install_and_import("paramiko")
-  import paramiko
-
-# Load pexpect
-
-try:
-  import pexpect
-except ImportError:
-  install_and_import("pexpect")
-  import pexpect
+    pass
+  pip_name = pip_names.get(package, package)
+  command  = "%s -m pip install %s" % (sys.executable, pip_name)
+  if sys.prefix == sys.base_prefix:
+    command = "%s --user" % (command)
+  if os.system(command) != 0:
+    print("Warning:\tUnable to install Python module %s" % (pip_name))
+    print("Information:\tInstall the requirements in a virtual environment: pip install -r requirements.txt")
+    exit(1)
+  site.addsitedir(site.getusersitepackages())
+  importlib.invalidate_caches()
+  return importlib.import_module(package)
 
 script_exe  = sys.argv[0]
-script_dir  = os.path.dirname(script_exe)
-uname_arch  = subprocess.check_output("uname -m", shell=True)
-meshcmd_bin = "%s/meshcmd.%s" % (script_dir, uname_arch)
+script_dir  = os.path.dirname(os.path.abspath(script_exe))
+
+# Get the meshcmd binary name for this OS and architecture
+
+def get_meshcmd_name():
+  os_type   = platform.system().lower()
+  uname_arch = platform.machine().lower()
+  if os_type == "windows":
+    os_name = "win"
+  else:
+    os_name = os_type
+  if re.search(r"aarch64|arm64", uname_arch):
+    os_arch = "arm64"
+  else:
+    if re.search(r"arm", uname_arch):
+      os_arch = "arm"
+    else:
+      if re.search(r"64", uname_arch):
+        os_arch = "x86_64"
+      else:
+        os_arch = "i386"
+  fetch_bin = "meshcmd_%s_%s" % (os_name, os_arch)
+  if os_name == "win":
+    fetch_bin = "%s.exe" % (fetch_bin)
+  return fetch_bin
+
+meshcmd_name = get_meshcmd_name()
+meshcmd_bin  = "%s/meshcmd/%s" % (script_dir, meshcmd_name)
 
 # Print help
 
@@ -259,17 +242,27 @@ def verify_password(stored_password, provided_password):
     pwdhash = binascii.hexlify(pwdhash).decode('ascii')
     return pwdhash == stored_password
 
+# Build a base URL with credentials, quoting characters that are special in URLs
+
+def get_base_url(http_proto, username, password, ip, port_no):
+  username = urllib.parse.quote(username, safe="")
+  password = urllib.parse.quote(password, safe="")
+  return "%s://%s:%s@%s:%s" % (http_proto, username, password, ip, port_no)
+
 # Download file
 
-def download_file(link, file):
+def download_file(link, file, dryrun=False):
   if not os.path.exists(file):
     string = "Downloading %s to %s" % (link, file)
+    if dryrun == True:
+      handle_output("Information:\tDry run: %s" % (string))
+      return
     wget.download(link, file)
   return
 
 # Get AMT value from web
 
-def get_web_amt_value(avail, model, driver, download):
+def get_web_amt_value(avail, model, driver, download, dryrun=False):
   if avail == "bios":
     found    = False
     base_url = "https://downloadcenter.intel.com"
@@ -298,14 +291,12 @@ def get_web_amt_value(avail, model, driver, download):
           driver.get(bios_url)    
           html   = driver.page_source
           html   = BeautifulSoup(html, features='lxml')
-          html   = html.findAll("a", text=re.compile(r"\.bio"))[0]
+          html   = html.find_all("a", string=re.compile(r"\.bio"))[0]
           html   = str(html)
           link   = html.split('"')[3]
           file   = os.path.basename(link)
-          download_file(link, file)
-        driver.quit()
+          download_file(link, file, dryrun)
         return version
-    driver.quit()
   return
 
 # Handle output
@@ -321,18 +312,18 @@ def handle_output(output):
 
 # Set SEP (ServerEdge PDU) value
 
-def set_sep_power(power, ip, outlet, username, password, driver, http_proto):
+def set_sep_power(power, ip, outlet, username, password, driver, http_proto, dryrun):
   if http_proto == "http":
     port_no = "80"
   else:
     port_no = "443"
-  base_url = "%s://%s:%s@%s:%s" % (http_proto, username, password, ip, port_no)
+  base_url = get_base_url(http_proto, username, password, ip, port_no)
   full_url = "%s/outlet.htm" % (base_url)
   if verbose_mode == True:
     string = "Information:\tConnecting to: %s" % (full_url)
     handle_output(string)
-  alert = driver.get(full_url)
-  html_doc = driver.page_source
+  button_id      = None
+  check_box_name = None
   if re.search(r"on", power.lower()):
     button_id = "T18"
     button_name = "B5"
@@ -369,6 +360,16 @@ def set_sep_power(power, ip, outlet, username, password, driver, http_proto):
   if re.search(r"h$|8", outlet.lower()):
     check_box_id = "C18"
     check_box_name = "C18"
+  if button_id == None:
+    handle_output("Warning:\tInvalid power state: %s" % (power))
+    return
+  if check_box_name == None:
+    handle_output("Warning:\tInvalid or missing outlet: %s" % (outlet))
+    return
+  if dryrun == True:
+    handle_output("Information:\tDry run: would set outlet %s to %s on %s" % (outlet, power, ip))
+    return
+  alert = driver.get(full_url)
   from selenium.webdriver.common.by import By
   check_box = driver.find_element(By.NAME, check_box_name)
   check_box.click()
@@ -385,7 +386,8 @@ def get_sep_value(get_value, ip, username, password, driver, http_proto, search)
     port_no = "80"
   else:
     port_no = "443"
-  base_url = "%s://%s:%s@%s:%s" % (http_proto, username, password, ip, port_no)
+  base_url = get_base_url(http_proto, username, password, ip, port_no)
+  full_url = None
   if re.search("outlet|status", get_value):
     full_url = "%s/status.xml" % (base_url)
   if re.search("outlet|status", get_value):
@@ -432,6 +434,9 @@ def get_sep_value(get_value, ip, username, password, driver, http_proto, search)
       full_url = "%s/confignet.htm" % (base_url)
     if re.search("receiver", search):
       full_url = "%s/configsnmp.htm" % (base_url)
+    if full_url == None:
+      handle_output("Warning:\tUnknown value: %s" % (search))
+      return
     if verbose_mode == True:
       string = "Information:\tConnecting to: %s" % (full_url)
       handle_output(string)
@@ -494,7 +499,7 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
     port_no = "16992"
   else:
     port_no = "16993"
-  base_url = "%s://%s:%s@%s:%s" % (http_proto, username, password, ip, port_no)
+  base_url = get_base_url(http_proto, username, password, ip, port_no)
   full_url = "%s/index.htm" % (base_url)
   if re.search("model|version|serial|release|system", get_value):
     full_url = "%s/hw-sys.htm" % (base_url)
@@ -620,91 +625,127 @@ def get_amt_value(get_value, ip, username, password, driver, http_proto, search)
             handle_output(result)
         else:
           handle_output(result)
-  driver.quit()
   return
 
 # Set AMT value
 
-def set_amt_value(ip, username, password, driver, http_proto, hostname, dommainname, primarydns, secondarydns, power):
+def set_amt_value(ip, username, password, driver, http_proto, hostname, dommainname, primarydns, secondarydns, power, dryrun):
   if http_proto == "http":
     port_no = "16992"
   else:
     port_no = "16993"
-  base_url = "%s://%s:%s@%s:%s" % (http_proto, username, password, ip, port_no)
+  base_url = get_base_url(http_proto, username, password, ip, port_no)
+  if dryrun == True:
+    if re.search(r"[a-z]", hostname):
+      handle_output("Information:\tDry run: would set Hostname to %s" % (hostname))
+    if re.search(r"[a-z]", domainname):
+      handle_output("Information:\tDry run: would set Domainname to %s" % (domainname))
+    if re.search(r"[a-z,0-9]", primarydns):
+      handle_output("Information:\tDry run: would set Primary DNS to %s" % (primarydns))
+    if re.search(r"[a-z,0-9]", secondarydns):
+      handle_output("Information:\tDry run: would set Secondary DNS to %s" % (secondarydns))
+    if re.search(r"[a-z]", power):
+      handle_output("Information:\tDry run: would send power %s to %s" % (power, ip))
+    return
   if re.search(r"[a-z]", hostname) or (r"[a-z]", domainname):
     full_url = "%s/fqdn.htm" % (base_url)
     if re.search(r"[a-z]", hostname):
       search = "HostName"
       driver.get(full_url)
       from selenium.webdriver.common.by import By
-      field = driver.find_element_by_name(search)
+      field = driver.find_element(By.NAME, search)
       field.clear()
       field.send_keys(hostname)
       string = "Information:\tSetting Hostname to %s" % (hostname)
       handle_output(string)
-      driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
+      driver.find_element(By.XPATH, '//input[@value="   Submit   "]').click()
     if re.search(r"[a-z]", domainname):
       search = "DomainName"
       driver.get(full_url)
       from selenium.webdriver.common.by import By
-      field = driver.find_element_by_name(search)
+      field = driver.find_element(By.NAME, search)
       field.clear()
       field.send_keys(domainname)
       string = "Information:\tSetting Domainname to %s" % (domainname)
       handle_output(string)
-      driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
+      driver.find_element(By.XPATH, '//input[@value="   Submit   "]').click()
   if re.search(r"[a-z,0-9]", primarydns) or (r"[a-z,0-9]", secondarydns):
     full_url = "%s/ip.htm" % (base_url)
     if re.search(r"[a-z,0-9]", primarydns):
       search = "DNSServer"
       driver.get(full_url)
       from selenium.webdriver.common.by import By
-      field = driver.find_element_by_name(search)
+      field = driver.find_element(By.NAME, search)
       field.clear()
       field.send_keys(primarydns)
       string = "Information:\tSetting Primary DNS to %s" % (primarydns)
       handle_output(string)
-      driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
+      driver.find_element(By.XPATH, '//input[@value="   Submit   "]').click()
     if re.search(r"[a-z,0-9]", secondarydns):
       search = "AlternativeDns"
       driver.get(full_url)
       from selenium.webdriver.common.by import By
-      field = driver.find_element_by_name(search)
+      field = driver.find_element(By.NAME, search)
       field.clear()
       field.send_keys(secondarydns)
       string = "Information:\tSetting Secondary DNS to %s" % (secondarydns)
       handle_output(string)
-      driver.find_element_by_xpath('//input[@value="   Submit   "]').click()
+      driver.find_element(By.XPATH, '//input[@value="   Submit   "]').click()
   if re.search(r"[a-z]", power):
     full_url = "%s/remote.htm" % (base_url)
+    power    = power.lower()
     if re.search(r"off", power):
-      driver.find_element_by_xpath('//input[@value="1"]').click()
-    if re.search(r"cycle", power):
-      driver.find_element_by_xpath('//input[@value="3"]').click()
-    if re.search(r"reset", power):
-      driver.find_element_by_xpath('//input[@value="4"]').click()
+      radio = "1"
+    elif re.search(r"cycle", power):
+      radio = "3"
+    elif re.search(r"reset", power):
+      radio = "4"
+    elif re.search(r"on", power):
+      radio = "2"
+    else:
+      handle_output("Warning:\tInvalid power state: %s" % (power))
+      return
     driver.get(full_url)
+    driver.find_element(By.XPATH, '//input[@value="%s"]' % (radio)).click()
     from selenium.webdriver.common.by import By
-    driver.find_element_by_xpath('//input[@value="Send Command"]').click()
+    driver.find_element(By.XPATH, '//input[@value="Send Command"]').click()
     time.sleep(2)
     object = driver.switch_to.alert
     time.sleep(2)
     object.accept()
     string = "Information:\tSending power %s to %s (Intel AMT has a 30s pause before operation is done)" % (power, ip)
     handle_output(string)
-  driver.quit()
   return
 
 # Compare versions
 
 def compare_versions(bios, avail, oob_type):
   if oob_type == "amt":
-    if re.search(".", bios):
-      current = bios.split(".")[2]
+    if not bios or not avail:
+      handle_output("Warning:\tUnable to determine BIOS versions to compare")
+      return
+    parts = bios.split(".")
+    if len(parts) < 3:
+      handle_output("Warning:\tUnable to parse current BIOS version: %s" % (bios))
+      return
+    current = parts[2].strip()
+    avail   = avail.strip()
+    if current.isdigit() and avail.isdigit():
+      current = int(current)
+      avail   = int(avail)
     if avail > current:
       handle_output("Information:\tNewer version of BIOS available")
     if avail == current:
       handle_output("Information:\tLatest version of BIOS installed")
+  return
+
+# Run a command, or just print it when doing a dry run
+
+def run_command(command, dryrun):
+  if dryrun == True:
+    print(command)
+  else:
+    os.system(command)
   return
 
 # Get console output
@@ -722,26 +763,33 @@ def get_console_output(command):
 
 # Check local config
 
-def check_local_config():
+def check_local_config(dryrun):
   pkg_list = [ "geckodriver", "amtterm", "npm", "ipmitool" ]
-  output = get_console_output("uname -a")
+  output  = get_console_output("uname -a")
+  pkg_dir = None
   if re.search("Darwin", output):
     if os.path.exists("/usr/local/bin/brew"):
       pkg_dir  = "/usr/local/bin"
     else:
       if os.path.exists("/opt/homebrew/bin/brew"):
         pkg_dir  = "/opt/homebrew/bin"
+    if pkg_dir == None:
+      handle_output("Warning:\tHomebrew not found, unable to install: %s" % (" ".join(pkg_list)))
+      return
     brew_bin = "%s/brew" % (pkg_dir)
     for pkg_name in pkg_list:
       pkg_bin = "%s/%s" % (pkg_dir, pkg_name)
       if not os.path.exists(pkg_bin):
         command = "%s install %s" % (brew_bin, pkg_name)
-        output  = get_console_output(command)
+        if dryrun == True:
+          print(command)
+        else:
+          output  = get_console_output(command)
   return
 
 # Check mesh config
 
-def check_mesh_config(mesh_bin):
+def check_mesh_config(mesh_bin, dryrun):
   l_mesh_dir = "./%s" % (mesh_bin)
   l_mesh_bin = "./%s/%s" % (mesh_bin, mesh_bin)
   g_mesh_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
@@ -750,88 +798,91 @@ def check_mesh_config(mesh_bin):
   g_node_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
   if not os.path.exists(l_mesh_bin) and not os.path.exists(g_mesh_bin):
     if not os.path.exists(l_mesh_dir):
-      os.mkdir(l_mesh_dir)
       command = "cd %s ; npm install %s" % (l_mesh_dir, mesh_bin)
-      output  = get_console_output(command)
-      if verbose_mode == True:
-         handle_output(output)
+      if dryrun == True:
+        print("mkdir %s" % (l_mesh_dir))
+        print(command)
+      else:
+        os.mkdir(l_mesh_dir)
+        output  = get_console_output(command)
+        if verbose_mode == True:
+           handle_output(output)
   return
 
 # Start MeshCommander
 
-def start_mesh(mesh_bin, mesh_port):
+def start_mesh(mesh_bin, mesh_port, dryrun):
   l_node_dir = "./%s/node_modules/%s" % (mesh_bin, mesh_bin)
   g_node_dir = "/usr/local/lib/node_modules/%s" % (mesh_bin)
   if os.path.exists(l_node_dir):
     command = "cd %s ; node %s --port %s" % (l_node_dir, mesh_bin, mesh_port)
-    os.system(command)
+    run_command(command, dryrun)
   else:
     if os.path.exists(g_node_dir):
       command = "cd %s ; node %s --port %s" % (g_node_dir, mesh_bin, mesh_port)
-      os.system(command)
+      run_command(command, dryrun)
     else:
-      string = "%s not installed" % (mesh_bin)
-      handle_output(string)
+      if dryrun == True:
+        command = "cd %s ; node %s --port %s" % (l_node_dir, mesh_bin, mesh_port)
+        print(command)
+      else:
+        string = "%s not installed" % (mesh_bin)
+        handle_output(string)
   return
+
+# Read entries (host, username, password) from ~/.goatpass
+
+def get_pass_entries():
+  entries   = []
+  pass_file = "%s/.%s" % (home_dir, password_db)
+  if os.path.exists(pass_file):
+    with open(pass_file, "r") as file:
+      for line in file.readlines():
+        line = line.rstrip("\r\n")
+        if not re.search(r"[A-Za-z0-9]", line):
+          continue
+        items = line.split(":", 2)
+        while len(items) < 3:
+          items.append("")
+        entries.append(tuple(items))
+  return entries
+
+# Get IPs
 
 def get_ips():
   ips = []
-  pass_file = "%s/.%s" % (home_dir, password_db)
-  if os.path.exists(pass_file):
-    file = open(pass_file, "r")
-    data = file.readlines()
-    for line in data:
-      line.rstrip()
-      file_ip = line.split(":")[0]
-      ips.append(file_ip)
+  for (file_ip, file_user, file_pass) in get_pass_entries():
+    ips.append(file_ip)
   return ips
 
 # Get username
 
 def get_username(ip):
-  username  = default_user
-  pass_file = "%s/.%s" % (home_dir, password_db)
-  if os.path.exists(pass_file) and re.search(r"[a-z]|[0-9]", ip):
-    file = open(pass_file, "r")
-    data = file.readlines()
-    for line in data:
-      line.rstrip()
-      file_user = line.split(":")[1]
-      file_ip   = line.split(":")[0]
-      if file_ip == ip:
+  if re.search(r"[a-z]|[0-9]", ip):
+    for (file_ip, file_user, file_pass) in get_pass_entries():
+      if file_ip == ip and file_user:
         return file_user
-  else:
-    return username
+  return default_user
 
 # Get password
 
 def get_password(ip, username):
-  password  = ""
-  pass_file = "%s/.%s" % (home_dir, password_db)
-  prompt    = "Password for %s:" % (ip)
-  if os.path.exists(pass_file):
-    file = open(pass_file, "r")
-    data = file.readlines()
-    for line in data:
-      line.rstrip()
-      (file_ip, file_user, file_pass) = line.split(":")
-      if file_ip == ip and file_user == username:
-        if re.search(r"[A-Z]|[a-z]|[0-9]", file_pass):
-          return file_pass
-        else:
-          password = getpass.getpass(prompt=prompt, stream=None)
-          return password
-  else:
-    password = getpass.getpass(prompt=prompt, stream=None)
-  return password
+  prompt = "Password for %s:" % (ip)
+  for (file_ip, file_user, file_pass) in get_pass_entries():
+    if file_ip == ip and file_user == username and file_pass:
+      return file_pass
+  return getpass.getpass(prompt=prompt, stream=None)
 
 # Sol to host
 
-def sol_to_host(ip, username, password, oob_type):
+def sol_to_host(ip, username, password, oob_type, dryrun):
   if oob_type == "amt":
     command = "export AMT_PASSWORD=\"%s\" ; amtterm %s" % (password, ip)
   else:
     command = "ipmitool -I lanplus -U %s -P %s -H %s sol activate" % (username, password, ip)
+  if dryrun == True:
+    print(command)
+    return
   if verbose_mode == True:
     string = "Executing:\t%s" % (command)
     handle_output(string)
@@ -844,39 +895,32 @@ def start_web_driver():
   if debug_mode == False:
     from selenium.webdriver.firefox.options import Options
     options = Options()
-    options.headless = True
+    options.add_argument("-headless")
     driver = webdriver.Firefox(options=options)
   else:
     driver = webdriver.Firefox()
   return driver
 
+# Close web client
+
+def quit_web_driver(driver):
+  if driver:
+    try:
+      driver.quit()
+    except Exception:
+      pass
+  return
+
 # Run meshcmd
 
-def mesh_command(ip, command, meshcmd, meshcmd_bin):
+def mesh_command(ip, meshcmd, meshcmd_bin, dryrun):
+  if platform.system() == "Darwin":
+    handle_output("Warning:\tMeshCmd is not available for Mac OS")
+    return
   if not os.path.exists(meshcmd_bin):
-    uname_arch  = subprocess.check_output("uname", shell=True)
-    if uname == "Darwin":
-      return
-    else:
-      if uname == "Linux":
-        os_name   = "linux"
-        if re.search(r"i386|x86", uname_arch):
-          if re.seach(r"64", uname_arch):
-            os_arch = "x86_64"
-          else:
-            os_arch = "i386"
-        else:
-          if re.seach(r"64", uname_arch):
-            os_arch = "arm64"
-          else:
-            os_arch = "arm"
-        fetch_bin = "meshcmd_%s_%s" % (os_name, os_arch) 
-      else:
-        os_name   = "win"
-        fetch_bin = "meshcmd_%s_%s.exe" % (os_name, os_arch) 
-    uname_arch  = subprocess.check_output("uname -m", shell=True)
-    meshcmd_url = "https://github.com/lateralblast/goat/blob/master/meshcmd/%s?raw=true" % (fetch_bin)
-    download_file(meshcmd_url, meshcmd_bin)
+    meshcmd_url = "https://github.com/lateralblast/goat/blob/master/meshcmd/%s?raw=true" % (meshcmd_name)
+    download_file(meshcmd_url, meshcmd_bin, dryrun)
+  if not os.access(meshcmd_bin, os.X_OK) and dryrun == False:
     command = "chmod +x %s" % (meshcmd_bin)
     os.system(command)
   if meshcmd == "help":
@@ -884,13 +928,16 @@ def mesh_command(ip, command, meshcmd, meshcmd_bin):
   else:
     if re.search(r"[0-9]", ip):
       status = check_ping(ip)
-      if not status == False:
-        username = get_username(ip)
-        password = get_password(ip, username)
-        command  = "sudo %s %s --host %s --host %s --user %s --pass %s" % (meshcmd_bin, meshcmd, ip, username, password)
+      if status == False:
+        return
+      username = get_username(ip)
+      password = get_password(ip, username)
+      command  = "sudo %s %s --host %s --user %s --pass %s" % (meshcmd_bin, meshcmd, ip, username, password)
     else:
       command  = "sudo %s %s" % (meshcmd_bin, meshcmd)
   handle_output(command)
+  if dryrun == True:
+    return
   os.system(command)
   return
 
@@ -904,22 +951,43 @@ def start_ssh_session(ip, username, password):
   ssh_session.sendline(password)
   return ssh_session
 
+# Build the racadm command to set a specific iDRAC value
+
+def get_idrac_set_command(group, parameter, value):
+  if re.search(r"lan|network", group):
+    group = "cfgLanNetworking"
+  elif re.search(r"server", group):
+    group = "cfgServerInfo"
+  elif re.search(r"serial", group):
+    group = "cfgSerial"
+  if re.search(r"[A-Za-z]", group):
+    command = "racadm config -g %s -o %s %s" % (group, parameter, value)
+  else:
+    command = "racadm set %s %s" % (parameter, value)
+  return command
+
 # Set a list of iDRAC values from a file
 
 def set_specific_idrac_values(ip, username, password, file_array, dryrun):
   if dryrun == False:
     ssh_session = start_ssh_session(ip, username, password)
   for line in file_array:
-    items = line.split(",")
+    line = line.strip()
+    if not line or line.startswith("#"):
+      continue
+    items = [item.strip() for item in line.split(",")]
     if len(items) > 2:
       group = items[0]
       value = items[2]
       parameter = items[1]
     else:
+      if len(items) < 2:
+        handle_output("Warning:\tSkipping invalid line: %s" % (line))
+        continue
       group = ""
       value = items[1]
       parameter = items[0]
-    command = "racadm config -g %s -o %s %s" % (group, parameter, value)
+    command = get_idrac_set_command(group, parameter, value)
     if dryrun == True:
       print(command) 
     else:
@@ -940,16 +1008,7 @@ def set_specific_idrac_values(ip, username, password, file_array, dryrun):
 # Set specific know iDRAC value
 
 def set_specific_idrac_value(ip, username, password, group, parameter, value, dryrun):
-  if re.search(r"lan|network",group):
-    group = "cfgLanNetworking"
-  if re.search(r"server",group):
-    greoup = "cfgServerInfo"
-  if re.search(r"serial",group):
-    greoup = "cfgSerial"
-  if re.search(r"[A-Z,a-z]", group):
-    command = "racadm set %s %s" % (parameter, value)
-  else:
-    command = "racadm config -g %s -o %s %s" % (group, parameter, value)
+  command = get_idrac_set_command(group, parameter, value)
   if dryrun == True:
     print(command)
   else:
@@ -971,6 +1030,9 @@ def set_specific_idrac_value(ip, username, password, group, parameter, value, dr
 
 def set_idrac_value(ip,username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power, dryrun):
   commands = []
+  if re.search(r"[a-z,0-9]", hostname):
+    command = "racadm config -g cfgLanNetworking -o cfgDNSRacName %s" % (hostname)
+    commands.append(command)
   if re.search(r"[a-z,0-9]", domainname):
     command = "racadm config -g cfgLanNetworking -o cfgDNSDomainNameFromDHCP 0"
     commands.append(command)
@@ -980,7 +1042,7 @@ def set_idrac_value(ip,username, password, hostname, domainname, netmask, gatewa
     command = "racadm config -g cfgLanNetworking -o cfgNicNetmask %s" % (netmask)
     commands.append(command)
   if re.search(r"[0-9]", gateway):
-    command = "racadm config -g cfgLanNetworking -o cfgNicNetmask %s" % (gateway)
+    command = "racadm config -g cfgLanNetworking -o cfgNicGateway %s" % (gateway)
     commands.append(command)
   if re.search(r"[0-9]", primarydns):
     command = "racadm config -g cfgLanNetworking -o cfgDNSServersFromDHCP 0"
@@ -1015,7 +1077,7 @@ def set_idrac_value(ip,username, password, hostname, domainname, netmask, gatewa
   if re.search(r"[0-9]", syslogport):
     command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogEnable 1"
     commands.append(command)
-    command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogPort%s" % (syslogport)
+    command = "racadm config -g cfgLanNetworking -o cfgRhostsSyslogPort %s" % (syslogport)
     commands.append(command)
   if re.search(r"[a-z]", power):
     power = re.sub(r"on", "up", power)
@@ -1077,15 +1139,18 @@ def get_ipmi_value(get_value, ip, username, password):
 
 # Set IPMI value
 
-def set_ipmi_value(set_value, ip, username, password):
+def set_ipmi_value(set_value, ip, username, password, dryrun):
   command = "ipmitool -I lanplus -U %s -P %s -H %s %s" % (username, password, ip, set_value)
   handle_output(command)
+  if dryrun == True:
+    return
   os.system(command)
   return
 
 # Use javaws to iDRAC KVM
 
-def java_idrac_kvm(ip, port, username, password, home_dir):
+def java_idrac_kvm(ip, port, username, password, home_dir, dryrun):
+  import tempfile
   web_url = "https://%s" % (ip)
   command = "which javaws"
   output  = os.popen(command).read()
@@ -1093,7 +1158,9 @@ def java_idrac_kvm(ip, port, username, password, home_dir):
     output = "Warning:\tNo Java installation found"
     handle_output(output)
     exit()
-  xml_file = "/tmp/%s.jnlp" % (ip)
+  if dryrun == True:
+    print("javaws <temporary file>.jnlp")
+    return
   command  = "uname -a"
   os_name  = os.popen(command).read()
   if re.search(r"^Darwin", os_name):
@@ -1216,18 +1283,20 @@ def java_idrac_kvm(ip, port, username, password, home_dir):
   data.append(string)
   data.append('</resources>')
   data.append('</jnlp>')
-  with open(xml_file, 'w') as file:
+  file_desc, xml_file = tempfile.mkstemp(suffix=".jnlp")
+  with os.fdopen(file_desc, 'w') as file:
     for item in data:
       file.write("%s\n" % item)
-  if os.path.exists(xml_file):
-    command = "chmod 700 %s" % (xml_file)
-    os.system(command)
-    command = "javaws %s" % (xml_file)
-    os.system(command)
+  command = "javaws %s" % (xml_file)
+  os.system(command)
 
 # Set APC power
 
-def set_apc_power(power, ip, outlet, username, password):
+def set_apc_power(power, ip, outlet, username, password, dryrun):
+  power = power.lower()
+  if not power in [ "on", "off" ]:
+    handle_output("Warning:\tInvalid power state for APC PDU: %s (use on or off)" % (power))
+    return
   command = "ssh -V 2>&1 |cut -f1 -d, |cut -f2 -d_"
   output  = os.popen(command).read()
   version = output.rstrip()
@@ -1244,29 +1313,37 @@ def set_apc_power(power, ip, outlet, username, password):
       output = "Warning:\tNo docker installation found"
       handle_output(output)
       exit()
-    string  = "Docker old SHH version tool"
+    string  = "Docker old SSH version tool"
     command = "docker images |grep ostrich"
     output  = os.popen(command).read()
-    if not re.search(r"ostrich", output):
+    if not re.search(r"ostrich", output) and dryrun == True:
+      print("docker build -t ostrich <temporary directory with ubuntu:16.04 and openssh-client>")
+    elif not re.search(r"ostrich", output):
+      import tempfile
       output = "Information:\tInstalling %s" % (string) 
       handle_output(output)
-      with open("/tmp/Dockerfile", 'w') as file:
-        file.write("FROM ubuntu:16.0\n")
+      build_dir = tempfile.mkdtemp()
+      with open("%s/Dockerfile" % (build_dir), 'w') as file:
+        file.write("FROM ubuntu:16.04\n")
         file.write("RUN apt-get update && apt-get install -y openssh-client\n")
-      with open("/tmp/docker-compose.yml", 'w') as file:
-        file.write('version: "3"\n')
-        file.write("services:\n")
-        file.write("  ostrich:\n")
-        file.write("    build:\n")
-        file.write("      context: .\n")
-        file.write("      dockerfile: Dockerfile\n")
-        file.write("    image: ostrich\n")
-        file.write("    container_name: ostrich\n")
-        file.write("    entrypoint: /bin/bash\n")
-        file.write("    working_dir: /root\n")
-    command = "docker run -it ostrich /bin/bash -c \"ssh %s %s@%s\"" % (ssh_opt, username, ip)
+      command = "docker build -t ostrich %s" % (build_dir)
+      if verbose_mode == True:
+        handle_output("Executing:\t%s" % (command))
+      output  = os.popen(command).read()
+      if verbose_mode == True:
+        handle_output(output)
+      command = "docker images |grep ostrich"
+      output  = os.popen(command).read()
+      if not re.search(r"ostrich", output):
+        handle_output("Warning:\tFailed to build %s" % (string))
+        return
+    command = "docker run --rm -it ostrich /bin/bash -c \"ssh %s %s@%s\"" % (ssh_opt, username, ip)
   else:
     command = "ssh %s %s@%s" % (ssh_opt, username, ip)
+  if dryrun == True:
+    print(command)
+    print("Would set outlet %s to %s" % (outlet, power))
+    return
   #child.expect("")
   #child.sendline("")
   outlet = str(outlet) 
@@ -1312,7 +1389,7 @@ def set_apc_power(power, ip, outlet, username, password):
 
 # Use docker container to drive iDRAC KVM
 
-def web_idrac_kvm(ip, port, username, password):
+def web_idrac_kvm(ip, port, username, password, dryrun):
   string  = "Docker iDRAC KVM redirection tool"
   command = "which docker"
   output  = os.popen(command).read()
@@ -1326,12 +1403,15 @@ def web_idrac_kvm(ip, port, username, password):
     output = "Information:\tInstalling %s" % (string) 
     handle_output(output)
     command = "docker pull domistyle/idrac6"
-    if verbose_mode == True:
-      output = "Executing:\t%s" % (command)
-      handle_output(output)
-    output  = os.popen(command).read()
-    if verbose_mode == True:
-      handle_output(output)
+    if dryrun == True:
+      print(command)
+    else:
+      if verbose_mode == True:
+        output = "Executing:\t%s" % (command)
+        handle_output(output)
+      output  = os.popen(command).read()
+      if verbose_mode == True:
+        handle_output(output)
   command = "docker ps |grep idrac |awk '{print $1}'"
   process = os.popen(command).read()
   process = process.rstrip()
@@ -1342,12 +1422,18 @@ def web_idrac_kvm(ip, port, username, password):
       output = "Information:\tStopping existing %s instance" % (string)
       handle_output(output)
       command = "docker kill %s" % (process)
-      output  = os.popen(command).read()
-      if verbose_mode == True:
-        handle_output(output)
+      if dryrun == True:
+        print(command)
+      else:
+        output  = os.popen(command).read()
+        if verbose_mode == True:
+          handle_output(output)
     else:
       exit()
   command = "docker run -d -p %s:%s -p 5900:5900 -e IDRAC_HOST=%s -e IDRAC_USER=%s -e IDRAC_PASSWORD=%s domistyle/idrac6" % (port, port, ip, username, password)
+  if dryrun == True:
+    print(command)
+    return
   if verbose_mode == True:
     output = "Executing:\t%s" % (command)
     handle_output(output)
@@ -1402,6 +1488,60 @@ if option["options"]:
   print_options(script_exe)
   exit()
 
+# Load third party modules (not needed for -h, --version or --options)
+
+# Load selenium
+
+try:
+  from selenium import webdriver
+  from selenium.webdriver.common.by import By
+except ImportError:
+  install_and_import("selenium")
+  from selenium import webdriver
+  from selenium.webdriver.common.by import By
+
+# Load bs4
+
+try:
+  from bs4 import BeautifulSoup
+except ImportError:
+  install_and_import("bs4")
+  from bs4 import BeautifulSoup
+
+# Load lxml
+
+try:
+  import lxml
+except ImportError:
+  install_and_import("lxml")
+  import lxml
+
+from lxml import etree
+
+# load wget
+
+try:
+  import wget
+except ImportError:
+  install_and_import("wget")
+  import wget
+
+# load paraminko
+
+try:
+  import paramiko
+except ImportError:
+  install_and_import("paramiko")
+  import paramiko
+
+# Load pexpect
+
+try:
+  import pexpect
+except ImportError:
+  install_and_import("pexpect")
+  import pexpect
+
 # Handle insecure switch
 
 if option["insecure"]:
@@ -1448,7 +1588,7 @@ else:
     if option["ip"]:
       username = get_username(ip)
   else:
-    if option["type"] and not option["allhosts"]:
+    if option["type"] and option["ip"] and not option["allhosts"]:
       password = get_password(ip, username)
 
 # Handle search switch
@@ -1573,6 +1713,12 @@ if option["syslogport"]:
 else:
   syslogport = ""
 
+# Handle group, parameter and value switches
+
+group     = option["group"] or ""
+parameter = option["parameter"] or ""
+value     = option["value"] or ""
+
 # Handle avail switch
 
 if option["avail"]:
@@ -1633,8 +1779,8 @@ else:
 if option["meshcommander"] or option["meshcentral"]:
   if option["port"]:
     mesh_port = option["port"]
-  check_mesh_config(mesh_bin)
-  start_mesh(mesh_bin, mesh_port)
+  check_mesh_config(mesh_bin, dryrun)
+  start_mesh(mesh_bin, mesh_port, dryrun)
   exit()
 
 # If option meshcmd is used the type of OOB is AMT
@@ -1646,7 +1792,7 @@ if option["meshcmd"]:
 
 if option["type"]:
   ips = []
-  check_local_config()
+  check_local_config(dryrun)
   oob_type = option["type"]
   oob_type = oob_type.lower()
   if option["allhosts"]:
@@ -1658,7 +1804,8 @@ if option["type"]:
         exit()
       else:
         driver = start_web_driver()
-        get_web_amt_value(avail, model, driver, download)
+        get_web_amt_value(avail, model, driver, download, dryrun)
+        quit_web_driver(driver)
     else:
       if option["ip"]:
         ips.append(ip)
@@ -1672,21 +1819,22 @@ if option["type"]:
           handle_output(output)
           exit()
   for ip in ips:
-    if re.search(r"amt|idrac|ipmi", oob_type) and option["sol"]:
-      status = check_ping(ip)
-      if not status == False:
-        sol_to_host(ip, username, password, oob_type)
-        exit()    
+    driver = None
     if option["allhosts"]:
       username = get_username(ip)
       password = get_password(ip, username)
+    if re.search(r"amt|idrac|ipmi", oob_type) and option["sol"]:
+      status = check_ping(ip)
+      if not status == False:
+        sol_to_host(ip, username, password, oob_type, dryrun)
+        exit()    
     if oob_type == "webidrac":
-      web_idrac_kvm(ip, port, username, password)
+      web_idrac_kvm(ip, port, username, password, dryrun)
     if oob_type == "javaidrac":
-      java_idrac_kvm(ip, port, username, password, home_dir)
+      java_idrac_kvm(ip, port, username, password, home_dir, dryrun)
     if oob_type == "apc":
       if option['set']:
-        set_apc_power(power, ip, outlet, username, password)
+        set_apc_power(power, ip, outlet, username, password, dryrun)
     if oob_type == "ipmi":
       status = check_ping(ip)
       if not status == False:
@@ -1694,30 +1842,27 @@ if option["type"]:
           get_ipmi_value(get_value, ip, username, password)
         if option['boot']:
           set_value = "chassis bootparam set bootflag %s" % (boot)
-          set_ipmi_value(set_value, ip, username, password)
+          set_ipmi_value(set_value, ip, username, password, dryrun)
         if option['power']:
           set_value = "chassis power %s" % (power)
-          set_ipmi_value(set_value, ip, username, password)
+          set_ipmi_value(set_value, ip, username, password, dryrun)
     if oob_type == "idrac":
       status = check_ping(ip)
       if not status == False:
         if option["get"]:
           bios = get_idrac_value(get_value, ip, username, password)
         if option["set"]:
-          if not option['file']:
-            if re.search(r"[A-Z,a-z]",option["parameter"]):
+          if option["file"]:
+            file_array = file_to_array(option["file"])
+            set_specific_idrac_values(ip, username, password, file_array, dryrun)
+          else:
+            if re.search(r"[A-Z,a-z]", parameter):
               set_specific_idrac_value(ip, username, password, group, parameter, value, dryrun)
             else:
               set_idrac_value(ip, username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power, dryrun)
-          else:
-            if re.search(r"[A-Z,a-z]",option["file"]):
-              file_name  = option["file"]
-              file_array = file_to_array(file_name)
-              set_specific_idrac_values(ip, username, password, file_array, dryrun)
-            else:
-              set_idrac_value(ip, username, password, hostname, domainname, netmask, gateway, primarydns, secondarydns, primaryntp, secondaryntp, primarysyslog, secondarysyslog, syslogport, power, dryrun)
     if oob_type == "sep":
-      driver = start_web_driver()
+      if option['get'] or dryrun == False:
+        driver = start_web_driver()
       if option['get']:
         status = check_ping(ip)
         if not status == False:
@@ -1725,18 +1870,19 @@ if option["type"]:
       if option['set']:
         status = check_ping(ip)
         if not status == False:
-          set_sep_power(power, ip, outlet, username, password, driver, http_proto)
+          set_sep_power(power, ip, outlet, username, password, driver, http_proto, dryrun)
     if oob_type == "amt":
       if option["meshcmd"]:
-        mesh_command(ip, password, meshcmd, meshcmd_bin)
+        mesh_command(ip, meshcmd, meshcmd_bin, dryrun)
       else:
-        driver = start_web_driver()
+        if option["get"] or option["check"] or option["avail"] or dryrun == False:
+          driver = start_web_driver()
       if option["check"]:
         status = check_ping(ip)
         if not status == False:
           model   = get_amt_value("model", ip, username, password, driver, http_proto, search)
           current = get_amt_value(check, ip, username, password, driver, http_proto, search)
-          avail   = get_web_amt_value(check, model, driver, download)
+          avail   = get_web_amt_value(check, model, driver, download, dryrun)
           compare_versions(current, avail, oob_type)
       if option["avail"]:
         if not option["model"]:
@@ -1745,9 +1891,9 @@ if option["type"]:
             username = get_username(ip)
             password = get_password(ip, username)
             model = get_amt_value("model", ip, username, password, driver, http_proto, search)
-            get_web_amt_value(avail, model, driver, download)
+            get_web_amt_value(avail, model, driver, download, dryrun)
         else:
-          get_web_amt_value(avail, model, driver, download)
+          get_web_amt_value(avail, model, driver, download, dryrun)
       if option["get"]:
         status = check_ping(ip)
         if not status == False:
@@ -1755,7 +1901,8 @@ if option["type"]:
       if option["set"]:
         status = check_ping(ip)
         if not status == False:
-          set_amt_value(ip, username, password, driver, http_proto, hostname, domainname, primarydns, secondarydns, power)
+          set_amt_value(ip, username, password, driver, http_proto, hostname, domainname, primarydns, secondarydns, power, dryrun)
+    quit_web_driver(driver)
 else:
   handle_output("Warning:\tNo OOB type specified")
   exit()

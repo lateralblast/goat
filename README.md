@@ -5,7 +5,7 @@ GOAT
 
 General OOB Automation Tool
 
-Version: 0.5.1
+Version: 0.8.8
 
 Introduction
 ------------
@@ -60,6 +60,38 @@ Todo:
 
 - Add a local password store so password can be stored securely
 - Add in support for other platforms from other scripts
+
+Security
+--------
+
+Passwords are passed to several tools on their command line or in the environment
+of a shell command, so they are visible to other users on the same machine, for
+example in the output of `ps`, in `/proc/<pid>/cmdline`, and in shell history:
+
+- ipmitool: the password is passed with `-P` (IPMI get/set and IPMI SOL)
+- docker: the password is passed with `-e` (`IDRAC_PASSWORD`) to `docker run` for the
+  web iDRAC KVM. The KVM tool itself runs inside the container, but the `docker run`
+  command line is on the host, so the password is visible there, and in
+  `docker inspect` output while the container exists
+- amtterm: the password is set with `export AMT_PASSWORD=...` in the shell command
+  that starts amtterm (AMT SOL)
+- meshcmd: the password is passed with `--pass`
+- goat.py itself: `--password` is visible in the goat.py command line
+
+Only the web iDRAC KVM and the APC SSH helper run in Docker (the APC helper container
+does not receive the password on its command line). ipmitool, amtterm and meshcmd are
+run directly on the host, so their command lines are visible in the host's `ps` output.
+
+Only use goat on a machine where you trust all the other users, and prefer
+prompting for the password (or `~/.goatpass`) over `--password`.
+
+Other things to be aware of:
+
+- `~/.goatpass` stores passwords in plain text, make sure it is only readable by you
+- `--verbose` and `--dryrun` print commands and URLs that include the password,
+  so redact the output before sharing it
+- The iDRAC Java KVM writes the password to a temporary jnlp file (only readable
+  by you) that is not removed afterwards
 
 Requirements
 ------------
@@ -122,9 +154,9 @@ rm geckodriver-v0.26.0-linux64.tar.gz
 License
 -------
 
-This software is licensed as CC-BA (Creative Commons By Attrbution)
+This software is licensed as CC BY-NC-SA 4.0 (Creative Commons Attribution-NonCommercial-ShareAlike). See the LICENSE file.
 
-http://creativecommons.org/licenses/by/4.0/legalcode
+https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
 
 Serial-Over-LAN
