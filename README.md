@@ -5,7 +5,7 @@ GOAT
 
 General OOB Automation Tool
 
-Version: 0.8.8
+Version: 0.8.9
 
 Introduction
 ------------
@@ -149,6 +149,14 @@ sudo sh -c 'tar -x geckodriver -zf geckodriver-v0.26.0-linux64.tar.gz -O > /usr/
 sudo chmod +x /usr/bin/geckodriver
 rm geckodriver-v0.26.0-linux64.tar.gz
 ```
+
+
+Help Support Development
+------------------------
+
+If you find this software useful and would like to support its development, please consider buying me a coffee:
+
+https://ko-fi.com/richardatlateralblast
 
 
 License

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Name:         goat (General OOB Automation Tool)
-# Version:      0.8.8
+# Version:      0.8.9
 # Release:      1
 # License:      CC BY-NC-SA 4.0 (Creative Commons Attribution-NonCommercial-ShareAlike)
 #               https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
