@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.10] - 2026-10-03
+
+- Code cleanup with no change in behaviour: replaced `== True`/`== False` comparisons with plain truthiness checks, use `sys.exit()` instead of the site-provided `exit()`, read files with a context manager, return an explicit `True` from `check_valid_ip`, and removed trailing whitespace
+
 ## [0.8.9] - 2026-09-30
 
 - Updated documentation with a support section
